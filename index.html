@@ -1,8 +1,5 @@
 <!-- 
-TECHDEBT: Better logic around Unknown cards
-TECHDEBT: Better logic around boxes never being more than total hand max
 TECHDEBT: Handle the terrorist -1 hand size event
-TECHDEBT: Move Richese cards to their own expansion
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -38,8 +35,14 @@ TECHDEBT: Move Richese cards to their own expansion
         }
 
         .app {
+            max-width: 1160px;
+            height: 100vh;
             margin: 0 auto;
             padding: 5px;
+        }
+
+        body {
+            min-height: 100vh;
         }
 
         .hero {
@@ -70,11 +73,19 @@ TECHDEBT: Move Richese cards to their own expansion
 
         .toolbar {
             display: grid;
-            grid-template-columns: 1.6fr 0.6fr 0.6fr 2fr;
+            grid-template-columns: 1.3fr 0.5fr 3.2fr;
             gap: 12px;
             align-items: end;
         }
+
+        .small-field {
+            width: 200px;
+            min-width: 200px;
+        }
+
+
         .small-field select {
+            min-width: 200px;
             padding: 8px 10px;
             font-size: .9rem;
         }
@@ -163,6 +174,11 @@ TECHDEBT: Move Richese cards to their own expansion
         .summary-actions .pill.clear-pill {
             background: #666;
             border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.confirming {
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .65);
+            transform: none;
         }
 
         .summary-actions .pill.deck-pill {
@@ -309,10 +325,11 @@ TECHDEBT: Move Richese cards to their own expansion
         .table-wrap {
             background: rgba(27, 31, 36, .94);
             border: 1px solid rgba(255, 255, 255, .08);
-            border-radius: 18px;
-            padding: 14px;
+            border-radius: 0;
+            padding: 0;
             overflow: auto;
             box-shadow: 0 16px 36px rgba(0, 0, 0, .28);
+            position: relative;
         }
 
         table {
@@ -358,18 +375,18 @@ TECHDEBT: Move Richese cards to their own expansion
             position: sticky;
             z-index: 2;
             text-align: center;
-            width: 30px;
-            min-width: 30px;
-            max-width: 30px;
+            width: 22px;
+            min-width: 22px;
+            max-width: 22px;
         }
 
         .sticky-col-name {
             position: sticky;
             z-index: 2;
             text-align: left;
-            width: 280px;
-            min-width: 280px;
-            max-width: 280px;
+            width: 24 0px;
+            min-width: 237px;
+            max-width: 237px;
         }
 
         .sticky-col-type {
@@ -392,7 +409,7 @@ TECHDEBT: Move Richese cards to their own expansion
             z-index: 4;
         }
 
-        .setcol {
+        .set-col {
             width: 34px;
             color: #fafafa;
             font-weight: 00;
@@ -405,10 +422,16 @@ TECHDEBT: Move Richese cards to their own expansion
             font-weight: 700;
         }
 
+        .name-cell {
+            font-size: .75rem;
+            line-height: 1.2;
+        }
+
         .info-cell {
             color: #fff;
             font-weight: 700;
             text-align: center;
+            padding: 0;
         }
 
         .name-cell small {
@@ -432,14 +455,14 @@ TECHDEBT: Move Richese cards to their own expansion
         .check-group {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
             flex-wrap: nowrap;
-            min-height: 20px;
+            min-height: 18px;
         }
 
         .check-group input {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             accent-color: #222;
             cursor: pointer;
             margin: 0;
@@ -448,7 +471,7 @@ TECHDEBT: Move Richese cards to their own expansion
 
         @media (pointer: coarse) {
             .check-group {
-                gap: 12px;
+                gap: 4px;
                 min-height: 32px;
             }
 
@@ -467,9 +490,17 @@ TECHDEBT: Move Richese cards to their own expansion
         .legend {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             align-items: center;
             margin-top: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .legend::-webkit-scrollbar {
+            height: 6px;
         }
 
         .legend span {
@@ -480,6 +511,19 @@ TECHDEBT: Move Richese cards to their own expansion
             background: rgba(255, 255, 255, .05);
             padding: 7px 10px;
             border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            cursor: pointer;
+            user-select: none;
+            transition: background .12s ease, border-color .12s ease, opacity .12s ease, transform .12s ease;
+            flex: 0 0 auto;
+        }
+
+        .legend span:hover {
+            transform: translateY(-1px);
+        }
+
+        .legend span.inactive {
+            opacity: .45;
         }
 
         .dot {
@@ -510,13 +554,12 @@ TECHDEBT: Move Richese cards to their own expansion
         }
 
         .info-btn {
-            margin-right: 6px;
-            margin-left: 0;
+            margin: 0 auto;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
+            width: 12px;
+            height: 12px;
             border: none;
-            font-size: 12px;
+            font-size: 9px;
             font-weight: 700;
             cursor: pointer;
             background: rgba(0, 0, 0, .35);
@@ -525,10 +568,11 @@ TECHDEBT: Move Richese cards to their own expansion
             align-items: center;
             justify-content: center;
             vertical-align: middle;
+            padding: 0;
         }
 
         .info-popup {
-            position: fixed;
+            position: absolute;
             background: #1e1e1e;
             color: #fff;
             padding: 12px 14px;
@@ -538,7 +582,7 @@ TECHDEBT: Move Richese cards to their own expansion
             line-height: 1.45;
             z-index: 1000;
             box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
-            width: min(360px, calc(100vw - 24px));
+            width: min(320px, calc(100vw - 24px));
             white-space: normal;
         }
 
@@ -550,6 +594,7 @@ TECHDEBT: Move Richese cards to their own expansion
             margin-bottom: 0;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
@@ -563,10 +608,6 @@ TECHDEBT: Move Richese cards to their own expansion
                     <div class="field search-field">
                         <label for="searchBox">Search cards</label>
                         <input id="searchBox" type="text" placeholder="Karama, poison, stunner..." />
-                    </div>
-                    <div class="field small-field">
-                        <label for="categoryFilter">Category</label>
-                        <select id="categoryFilter"></select>
                     </div>
                     <div class="field small-field">
                         <label for="typeFilter">Type</label>
@@ -591,16 +632,18 @@ TECHDEBT: Move Richese cards to their own expansion
     <script>
         const STORAGE_KEY = "atreides-tracker-interactive-v1";
 
+        // prettier-ignore-start
+
         const factions = [
+            { key: "atreides", label: "Atreides", color: "#7f8f2a" },
+            { key: "harkonnen", label: "Harkonnen", color: "#151515" },
+            { key: "fremen", label: "Fremen", color: "#d89d1f" },
             { key: "emperor", label: "Emperor", color: "#b52f23" },
             { key: "spacingGuild", label: "Spacing Guild", color: "#d05f1d" },
-            { key: "fremen", label: "Fremen", color: "#d89d1f" },
-            { key: "atreides", label: "Atreides", color: "#7f8f2a" },
             { key: "beneGesserit", label: "Bene Gesserit", color: "#1f3f86" },
-            { key: "harkonnen", label: "Harkonnen", color: "#151515" },
             { key: "ixian", label: "Ixian", color: "#b9b27a" },
             { key: "tleilaxu", label: "Tleilaxu", color: "#5f426f" },
-            { key: "choam", label: "Choam", color: "#7f1111" },
+            { key: "choam", label: "CHOAM", color: "#7f1111" },
             { key: "richese", label: "Richese", color: "#ddd8cb" },
             { key: "ecaz", label: "Ecaz", color: "#9b58d0" },
             { key: "moritani", label: "Moritani", color: "#4e97a4" }
@@ -608,87 +651,118 @@ TECHDEBT: Move Richese cards to their own expansion
 
         const rows = [
             {
-                id: "weapon-projectile", category: "Weapons", name: "Various",
+                setCounts: [4, 1, 0, 0], color: "#9a3f11",
+                id: "weapon-projectile", name: "Various", type: "Weapon Projectile", category: "Weapons",
                 info: `
-                    Base:
+**Various [Weapon Projectiles]**  
+Base:
+- Crysknife
+- Maula Pistol
+- Slip Tip
+- Stunner
 
-                    - Crysknife
-
-                    - Maula Pistol
-
-                    - Slip Tip
-
-                    - Stunner
-
-                    E1: Hunter Seeker`,
-                type: "Weapon Projectile", setCounts: [4, 1, 0, 0], color: "#9a3f11"
-            },
+Exp1: Hunter Seeker` },
             {
-                id: "weapon-poison", category: "Weapons", name: "Various",
+                setCounts: [4, 1, 0, 0], color: "#9a3f11",
+                id: "weapon-poison", name: "Various", type: "Weapon Poison", category: "Weapons",
                 info: `
-                    Base:
+**Various [Weapon Poisons]**  
+Base:
+- Chaumas
+- Chaumurky
+- Ella Drug
+- Gom Jabbar
 
-                    - Chaumas
+Exp1: Basillia Weapon` },
+            { setCounts: [1, 0, 0, 0], color: "#9a3f11", id: "lasgun", name: "Lasgun", type: "Weapon Spcl", category: "Weapons", info: `**Lasgun [Weapon Special]**` },
+            {
+                setCounts: [0, 1, 1, 0], color: "#9a3f11", id: "artillery-strike", name: "Artillery Strike", type: "Weapon Spcl", category: "Weapons", sharedExpansionCopies: 1,
+                info: `
+**Artillery Strike [Weapon Special]**  
+_Upsert in Deck (Replace E1 Copy/Use Alone)_` },
+            { setCounts: [0, 0, 1, 0], color: "#B67C58", id: "richese-mirror-weapon", name: "Mirror Weapon", type: "Weapon Spcl", category: "Weapons", richeseOnlyE2: true, info: `**Mirror Weapon [Weapon Special]**\n\n_Richese Treachery Card_` },
+            {
+                setCounts: [0, 1, 1, 0], color: "#9a3f11", id: "poison-tooth", name: "Poison Tooth", type: "Weapon Poison Spcl", category: "Weapons", sharedExpansionCopies: 1,
+                info: `
+**Poison Tooth [Weapon Poison Special]**  
+_Upsert in Deck (Replace E1 Copy/Use Alone)_` },
+            { setCounts: [0, 1, 0, 0], color: "#9a3f11", id: "poison-blade", name: "Poison Blade", type: "Weapon Spcl", category: "Weapons", info: `**Poison Blade [Weapon Special]**` },
+            { setCounts: [0, 0, 1, 0], color: "#B67C58", id: "richese-stone-burner", name: "Stone Burner", type: "Weapon Spcl", category: "Weapons", richeseOnlyE2: true, info: `**Stone Burner [Weapon Special]**\n\n_Richese Treachery Card_` },
+            { setCounts: [0, 1, 0, 0], color: "#9a3f11", id: "weirding-way", name: "Weirding Way", type: "Weapon Defense Spcl", category: "Weapons", info: `**Weirding Way [Weapon Defense Special]**` },
 
-                    - Chaumurky
+            { setCounts: [0, 1, 0, 0], color: "#243965", id: "chemistry", name: "Chemistry", type: "Defense Weapon Spcl", category: "Defenses", info: `**Chemistry [Defense Weapon Special]**` },
+            { setCounts: [0, 0, 1, 0], color: "#6D7C90", id: "richese-portable-snooper", name: "Portable Snooper", type: "Defense Poison", category: "Defenses", richeseOnlyE2: true, info: `**Portable Snooper [Defense Poison]\n\n_Richese Treachery Card_` },
+            { setCounts: [0, 1, 0, 0], color: "#243965", id: "shield-snooper", name: "Shield Snooper", type: "Defense Spcl", category: "Defenses", info: `**Shield Snooper [Defense Special]**` },
+            { setCounts: [4, 1, 0, 0], color: "#243965", id: "shield", name: "Shield", type: "Defense Projectile", category: "Defenses", info: `**Shield [Defense Projectile]**` },
+            { setCounts: [4, 1, 0, 0], color: "#243965", id: "snooper", name: "Snooper", type: "Defense Poison", category: "Defenses", info: `**Snooper [Defense Poison]**` },
 
-                    - Ella Drug
+            { setCounts: [0, 1, 0, 0], color: "#4b5d22", id: "amal", name: "Amal", type: "Special", category: "Specials", info: `**Amal [Special]**` },
+            { setCounts: [3, 0, 0, 0], color: "#4b5d22", id: "cheap-heroine", name: "Cheap Hero(ine)", type: "Spcl Leader", category: "Specials", info: `**Cheap Hero(ine) [Special Leader]**` },
+            { setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-distrans", name: "Distrans", type: "Special", category: "Specials", richeseOnlyE2: true, info: `**Distrans [Special]**\n\n_Richese Treachery Card_` },
+            { setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "family-atomics", name: "Family Atomics", type: "Spcl Storm", category: "Specials", info: `**Family Atomics [Special Storm]**` },
+            { setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "hajr", name: "Hajr", type: "Spcl Movement", category: "Specials", info: `**Hajr [Special Movement]**` },
+            { setCounts: [0, 0, 0, 1], color: "#4b5d22", id: "harass-withdraw", name: "Harass & Withdraw", type: "Special", category: "Specials", info: `**Harass & Withdraw [Special]**` },
+            { setCounts: [0, 1, 0, 0], color: "#4b5d22", id: "harvester", name: "Harvester", type: "Spcl Spice Blow", category: "Specials", info: `**Harvester [Special Spice Blow]**` },
+            { setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-juice-of-sappho", name: "Juice of Sapho", type: "Special", category: "Specials", richeseOnlyE2: true, info: `**Juice of Sapho [Special]**\n\n_Richese Treachery Card_` },
+            {
+                setCounts: [2, 0, 0, 0], color: "#4b5d22", id: "karama", name: "Karama", type: "Special", category: "Specials",
+                info: `
+**Karama [Special]**  
+_Base replaced with E2 (better explanations)_  
 
-                    - Gom Jabbar
+After game setup and factions have completed their "At Start" actions, use this card to stop one use of a faction advantage (including alliance abilities) when a player attempts to use it. When used on faction advantages during a battle this must be played before Battle Plans are revealed.  
+Or, this card may be used to do one of the following when appropriate:  
 
-                    E1: Basillia Weapon`,
-                type: "Weapon Poison", setCounts: [4, 1, 0, 0], color: "#9a3f11"
-            },
-            { id: "artillery-strike", category: "Weapons", name: "Artillery Strike", info: `Artillery Strike`, type: "Weapon Special", setCounts: [0, 1, 1, 0], color: "#9a3f11" },
-            { id: "lasgun", category: "Weapons", name: "Lasgun", info: `Lasgun`, type: "Weapon Special", setCounts: [1, 0, 0, 0], color: "#9a3f11" },
-            { id: "mirror-weapon", category: "Weapons", name: "Mirror Weapon", info: `Mirror Weapon`, type: "Weapon Special", setCounts: [0, 0, 1, 0], color: "#9a3f11" },
-            { id: "poison-tooth", category: "Weapons", name: "Poison Tooth", info: `Poison Tooth`, type: "Weapon Poison Special", setCounts: [0, 1, 1, 0], color: "#9a3f11" },
-            { id: "stone-burner", category: "Weapons", name: "Stone Burner", info: `Stone Burner`, type: "Weapon Special", setCounts: [0, 0, 1, 0], color: "#9a3f11" },
-            { id: "poison-blade", category: "Weapons", name: "Poison Blade", info: `Poison Blade`, type: "Weapon Special", setCounts: [0, 1, 0, 0], color: "#9a3f11" },
-            { id: "weirding-way", category: "Weapons", name: "Weirding Way", info: `Weirding Way`, type: "Weapon Defense Special", setCounts: [0, 1, 0, 0], color: "#9a3f11" },
+* Purchase any player’s Force Shipment at Guild rates (½ normal), paid to the Spice Bank.
+* Bid more spice than you have (without revealing this card) and/or purchase a Treachery Card without paying spice for it (cannot be used for Richese Auctions or if your hand is full).
+* Use your faction’s Special Karama Power (limit once per game).
 
-            { id: "chemistry", category: "Defenses", name: "Chemistry", info: `Chemistry`, type: "Defense Weapon Special", setCounts: [0, 1, 0, 0], color: "#243965" },
-            { id: "portable-snooper", category: "Defenses", name: "Portable Snooper", info: `Portable Snooper`, type: "Defense Poison", setCounts: [0, 0, 1, 0], color: "#243965" },
-            { id: "shield-snooper", category: "Defenses", name: "Shield Snooper", info: `Shield Snooper`, type: "Defense Special", setCounts: [0, 1, 0, 0], color: "#243965" },
-            { id: "shield", category: "Defenses", name: "Shield", info: `Shield`, type: "Defense Projectile", setCounts: [4, 1, 0, 0], color: "#243965" },
-            { id: "snooper", category: "Defenses", name: "Snooper", info: `Snooper`, type: "Defense Poison", setCounts: [4, 1, 0, 0], color: "#243965" },
+Cannot be used to stop a Special Victory Condition or Special Karama Power.  
 
-            { id: "amal", category: "Specials", name: "Amal", info: `Amal`, type: "Special", setCounts: [0, 1, 0, 0], color: "#4b5d22" },
-            { id: "cheap-heroine", category: "Specials", name: "Cheap Hero(ine)", info: `Cheap Hero(ine)`, type: "Special Leader", setCounts: [3, 0, 0, 0], color: "#4b5d22" },
-            { id: "distrans", category: "Specials", name: "Distrans", info: `Distrans`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
-            { id: "family-atomics", category: "Specials", name: "Family Atomics", info: `Family Atomics`, type: "Special Storm", setCounts: [1, 0, 0, 0], color: "#4b5d22" },
-            { id: "hajr", category: "Specials", name: "Hajr", info: `Hajr`, type: "Special Movement", setCounts: [1, 0, 0, 0], color: "#4b5d22" },
-            { id: "harass-withdraw", category: "Specials", name: "Harass & Withdraw", info: `Harass & Withdraw`, type: "Special", setCounts: [0, 0, 0, 1], color: "#4b5d22" },
-            { id: "harvester", category: "Specials", name: "Harvester", info: `Harvester`, type: "Special Spice Blow", setCounts: [0, 1, 0, 0], color: "#4b5d22" },
-            { id: "juice-of-sappho", category: "Specials", name: "Juice of Sapho", info: `Juice of Sapho`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
-            { id: "karama", category: "Specials", name: "Karama", info: `Karama`, type: "Special", setCounts: [2, 0, 3, 0], color: "#4b5d22" },
-            { id: "nullentropy-box", category: "Specials", name: "Nullentropy Box", info: `Nullentropy Box`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
-            { id: "ornithopter", category: "Specials", name: "Ornithopter", info: `Ornithopter`, type: "Special Movement", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
-            { id: "residual-poison", category: "Specials", name: "Residual Poison", info: `Residual Poison`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
-            { id: "recruits", category: "Specials", name: "Recruits", info: `Recruits`, type: "Special", setCounts: [0, 0, 0, 1], color: "#4b5d22" },
-            { id: "reinforcements", category: "Specials", name: "Reinforcements", info: `Reinforcements`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
-            { id: "semuta-drug", category: "Specials", name: "Semuta Drug", info: `Semuta Drug`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
-            { id: "thumper", category: "Specials", name: "Thumper", info: `Thumper`, type: "Special Spice Blow", setCounts: [0, 1, 0, 0], color: "#4b5d22" },
-            { id: "tleilaxu-ghola", category: "Specials", name: "Tleilaxu Ghola", info: `Tleilaxu Ghola`, type: "Special", setCounts: [1, 0, 0, 0], color: "#4b5d22" },
-            { id: "truthtrance", category: "Specials", name: "Truthtrance", info: `Truthtrance`, type: "Special", setCounts: [2, 0, 0, 0], color: "#4b5d22" },
-            { id: "weather-control", category: "Specials", name: "Weather Control", info: `Weather Control`, type: "Special Storm", setCounts: [1, 0, 0, 0], color: "#4b5d22" },
+Discard after use.` },
+            {
+                setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-karama", name: "Karama", type: "Special", category: "Specials", richeseOnlyE2: true,
+                info: `
+**Karama [Special]**  
+_Richese Treachery Card_  
+
+After game setup and factions have completed their "At Start" actions, use this card to stop one use of a faction advantage (including alliance abilities) when a player attempts to use it. When used on faction advantages during a battle this must be played before Battle Plans are revealed.  
+Or, this card may be used to do one of the following when appropriate:  
+
+* Purchase any player’s Force Shipment at Guild rates (½ normal), paid to the Spice Bank.
+* Bid more spice than you have (without revealing this card) and/or purchase a Treachery Card without paying spice for it (cannot be used for Richese Auctions or if your hand is full).
+* Use your faction’s Special Karama Power (limit once per game).
+
+Cannot be used to stop a Special Victory Condition or Special Karama Power.  
+
+Discard after use.` },
+            { setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-nullentropy-box", name: "Nullentropy Box", type: "Special", category: "Specials", richeseOnlyE2: true, info: `**Nullentropy Box [Special]**\n\n_Richese Treachery Card_` },
+            { setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-ornithopter", name: "Ornithopter", type: "Spcl Movement", category: "Specials", richeseOnlyE2: true, info: `**Ornithopter [Special Movement]**\n\n_Richese Treachery Card_` },
+            { setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-residual-poison", name: "Residual Poison", type: "Special", category: "Specials", richeseOnlyE2: true, info: `**Residual Poison [Special]**\n\n_Richese Treachery Card_` },
+            { setCounts: [0, 0, 0, 1], color: "#4b5d22", id: "recruits", name: "Recruits", type: "Special", category: "Specials", info: `**Recruits [Special]**` },
+            { setCounts: [0, 0, 0, 1], color: "#4b5d22", id: "reinforcements", name: "Reinforcements", type: "Special", category: "Specials", info: `**Reinforcements [Special]**` },
+            { setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-semuta-drug", name: "Semuta Drug", type: "Special", category: "Specials", richeseOnlyE2: true, info: `**Semuta Drug [Special]**\n\n_Richese Treachery Card_` },
+            { setCounts: [0, 1, 0, 0], color: "#4b5d22", id: "thumper", name: "Thumper", type: "Spcl Spice Blow", category: "Specials", info: `**Thumper [Special Spice Blow]**` },
+            { setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "tleilaxu-ghola", name: "Tleilaxu Ghola", type: "Special", category: "Specials", info: `**Tleilaxu Ghola [Special]**` },
+            { setCounts: [2, 0, 0, 0], color: "#4b5d22", id: "truthtrance", name: "Truthtrance", type: "Special", category: "Specials", info: `**Truthtrance [Special]**` },
+            { setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "weather-control", name: "Weather Control", type: "Spcl Storm", category: "Specials", info: `**Weather Control [Special Storm]**` },
 
             {
-                id: "worthless-card", category: "Worthless", name: "Various",
+                setCounts: [5, 1, 0, 0], color: "#938559",
+                id: "worthless-card", name: "Various", type: "Worthless Card", category: "Worthless",
                 info: `
-                - Baliset
+**Various [Worthless Cards]**  
 
-                - Jubba Cloak
+Base:  
+- Baliset
+- Jubba Cloak
+- Kulon
+- La, La, La
+- Trip to Gamont
 
-                - Kull Wahad (2 in E1)
+Exp1: Kull Wahad`},
 
-                - Kulon
-
-                - La, La, La
-                
-                - Trip to Gamont`, type: "Worthless Card", setCounts: [5, 1, 0, 0], color: "#938559"
-            },
-            { id: "unknown", category: "Unknown", name: "Unknown", info: `Unknown`, type: "Unknown", setCounts: [" ", " ", " ", " "], color: "#6b6b6b" }
+            { setCounts: [" ", " ", " ", " "], color: "#6b6b6b", id: "unknown", name: "Unknown", type: "Unknown", category: "Unknown", info: `**Unknown [Unknown]**` }
         ];
 
         const expansions = [
@@ -701,6 +775,8 @@ TECHDEBT: Move Richese cards to their own expansion
             { key: "deck", label: "Deck", color: "#5a3416" },
             { key: "discard", label: "Discard", color: "#a87442" }
         ];
+
+        // prettier-ignore-end
 
         const factionHandLimits = {
             emperor: 4,
@@ -721,10 +797,10 @@ TECHDEBT: Move Richese cards to their own expansion
         const state = loadState();
 
         const searchBox = document.getElementById("searchBox");
-        const categoryFilter = document.getElementById("categoryFilter");
         const typeFilter = document.getElementById("typeFilter");
         const trackerHead = document.getElementById("trackerHead");
         const trackerBody = document.getElementById("trackerBody");
+        const tableWrap = document.querySelector(".table-wrap");
         const factionSummary = document.getElementById("factionSummary");
         const summaryActions = document.getElementById("summaryActions");
         const legend = document.getElementById("legend");
@@ -745,7 +821,10 @@ TECHDEBT: Move Richese cards to their own expansion
                     selectedSummaryColumns: Array.isArray(parsed.selectedSummaryColumns) && parsed.selectedSummaryColumns.length
                         ? parsed.selectedSummaryColumns
                         : summaryColumns.map((column) => column.key),
-                    showExpansionColumns: parsed.showExpansionColumns !== false
+                    showExpansionColumns: parsed.showExpansionColumns !== false,
+                    selectedCategories: Array.isArray(parsed.selectedCategories) && parsed.selectedCategories.length
+                        ? parsed.selectedCategories
+                        : [...new Set(rows.map((row) => row.category))]
                 };
             } catch (error) {
                 return {
@@ -754,7 +833,8 @@ TECHDEBT: Move Richese cards to their own expansion
                     selectedFactions: factions.map((faction) => faction.key),
                     selectedExpansions: expansions.map((expansion) => expansion.key),
                     selectedSummaryColumns: summaryColumns.map((column) => column.key),
-                    showExpansionColumns: true
+                    showExpansionColumns: true,
+                    selectedCategories: [...new Set(rows.map((row) => row.category))]
                 };
             }
         }
@@ -762,7 +842,6 @@ TECHDEBT: Move Richese cards to their own expansion
         function saveState() {
             state.filters = {
                 search: searchBox.value,
-                category: categoryFilter.value,
                 type: typeFilter.value
             };
             state.selectedFactions = Array.isArray(state.selectedFactions) && state.selectedFactions.length
@@ -775,6 +854,9 @@ TECHDEBT: Move Richese cards to their own expansion
                 ? state.selectedSummaryColumns
                 : summaryColumns.map((column) => column.key);
             state.showExpansionColumns = state.showExpansionColumns !== false;
+            state.selectedCategories = Array.isArray(state.selectedCategories) && state.selectedCategories.length
+                ? state.selectedCategories
+                : [...new Set(rows.map((row) => row.category))];
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         }
 
@@ -782,21 +864,35 @@ TECHDEBT: Move Richese cards to their own expansion
             const categories = ["All", ...new Set(rows.map((row) => row.category))];
             const types = ["All", ...new Set(rows.map((row) => row.type))];
 
-            categoryFilter.innerHTML = categories.map((value) => `<option>${value}</option>`).join("");
             typeFilter.innerHTML = types.map((value) => `<option>${value}</option>`).join("");
 
             searchBox.value = state.filters.search || "";
-            categoryFilter.value = state.filters.category || "All";
             typeFilter.value = state.filters.type || "All";
+            state.selectedCategories = Array.isArray(state.selectedCategories) && state.selectedCategories.length
+                ? state.selectedCategories
+                : categories.filter((value) => value !== "All");
 
             state.selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
                 ? state.selectedExpansions
                 : expansions.map((expansion) => expansion.key);
 
-
             legend.innerHTML = [
                 ...new Map(rows.map((row) => [row.category, row.color])).entries()
-            ].map(([label, color]) => `<span><i class="dot" style="background:${color}"></i>${label}</span>`).join("");
+            ].map(([label, color]) => {
+                const isSelected = state.selectedCategories.includes(label);
+                const hex = color.replace("#", "");
+                const red = parseInt(hex.substring(0, 2), 16);
+                const green = parseInt(hex.substring(2, 4), 16);
+                const blue = parseInt(hex.substring(4, 6), 16);
+                const activeBg = `rgba(${red}, ${green}, ${blue}, 0.8)`;
+                return `<span class="${isSelected ? "active" : "inactive"}" data-category-chip="${label}" style="background:${isSelected ? activeBg : "rgba(255, 255, 255, .05)"}; border-color:${isSelected ? activeBg : "rgba(255, 255, 255, .12)"};"><i class="dot" style="background:${color}"></i>${label}</span>`;
+            }).join("");
+
+            legend.querySelectorAll("[data-category-chip]").forEach((chip) => {
+                chip.addEventListener("click", () => {
+                    toggleCategoryChip(chip.dataset.categoryChip);
+                });
+            });
         }
 
         function buildHeader() {
@@ -825,7 +921,7 @@ TECHDEBT: Move Richese cards to their own expansion
 
             const row = document.createElement("tr");
             row.innerHTML = `
-        ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<th class="${stickyClassByExpansionKey[expansion.key]} setcol" style="background:#333; color:#fff;">${expansion.label}</th>`).join("")}
+        ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<th class="${stickyClassByExpansionKey[expansion.key]} set-col" style="background:#333; color:#fff;">${expansion.label}</th>`).join("")}
         <th class="sticky-left-5" style="background:#333; color:#fff;">T</th>
         <th class="sticky-left-6" style="background:#333; color:#fff;">K</th>
         <th class="sticky-left-8" style="background:#333; color:#fff;">A</th>
@@ -841,7 +937,9 @@ TECHDEBT: Move Richese cards to their own expansion
         function currentFilters() {
             return {
                 search: searchBox.value.trim().toLowerCase(),
-                category: categoryFilter.value,
+                category: Array.isArray(state.selectedCategories) && state.selectedCategories.length
+                    ? state.selectedCategories
+                    : [...new Set(rows.map((row) => row.category))],
                 type: typeFilter.value
             };
         }
@@ -849,21 +947,35 @@ TECHDEBT: Move Richese cards to their own expansion
         function rowMatches(row, filters) {
             const searchText = `${row.name} ${row.type} ${row.category} ${row.info || ""}`.toLowerCase();
             const searchOk = !filters.search || searchText.includes(filters.search);
-            const categoryOk = filters.category === "All" || row.category === filters.category;
+            const categoryOk = Array.isArray(filters.category)
+                ? filters.category.includes(row.category)
+                : filters.category === "All" || row.category === filters.category;
             const typeOk = filters.type === "All" || row.type === filters.type;
-            const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
-                ? state.selectedExpansions
-                : expansions.map((expansion) => expansion.key);
-            const expansionOk = expansions.some((expansion) => {
-                const value = row.setCounts[expansion.index];
-                return selectedExpansions.includes(expansion.key)
-                    && value !== 0
-                    && value !== "0"
-                    && value !== null
-                    && value !== undefined
-                    && value !== "";
+            const richeseOk = !row.richeseOnlyE2 || isRicheseActive();
+            const expansionOk = row.id === "unknown" || expansions.some((expansion) => {
+                const value = Number(row.setCounts[expansion.index]);
+                return isExpansionActiveForRow(row, expansion) && Number.isFinite(value) && value > 0;
             });
-            return searchOk && categoryOk && typeOk && expansionOk;
+            return searchOk && categoryOk && typeOk && expansionOk && richeseOk;
+        }
+        function toggleCategoryChip(category) {
+            const current = Array.isArray(state.selectedCategories) && state.selectedCategories.length
+                ? [...state.selectedCategories]
+                : [...new Set(rows.map((row) => row.category))];
+            const exists = current.includes(category);
+
+            if (exists) {
+                if (current.length === 1) {
+                    return;
+                }
+                state.selectedCategories = current.filter((value) => value !== category);
+            } else {
+                state.selectedCategories = [...current, category];
+            }
+
+            saveState();
+            populateControls();
+            renderTable();
         }
 
         function cellKey(rowId, factionKey, index) {
@@ -871,18 +983,20 @@ TECHDEBT: Move Richese cards to their own expansion
         }
 
         function getRowBoxCount(row) {
-            const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
-                ? state.selectedExpansions
-                : expansions.map((expansion) => expansion.key);
-
-            return expansions.reduce((sum, expansion) => {
-                if (!selectedExpansions.includes(expansion.key)) {
+            const total = expansions.reduce((sum, expansion) => {
+                if (!isExpansionActiveForRow(row, expansion)) {
                     return sum;
                 }
 
                 const numericValue = Number(row.setCounts[expansion.index]);
                 return Number.isFinite(numericValue) ? sum + numericValue : sum;
             }, 0);
+
+            if (Number.isFinite(row.sharedExpansionCopies)) {
+                return Math.min(total, row.sharedExpansionCopies);
+            }
+
+            return total;
         }
 
         function getRowBoxCountForFaction(row, factionKey) {
@@ -914,6 +1028,37 @@ TECHDEBT: Move Richese cards to their own expansion
             }, 0);
         }
 
+        const actionConfirmState = {
+            resetDeck: false,
+            clearAll: false
+        };
+
+        let actionConfirmTimer = null;
+
+        function clearActionConfirmState() {
+            actionConfirmState.resetDeck = false;
+            actionConfirmState.clearAll = false;
+            if (actionConfirmTimer) {
+                window.clearTimeout(actionConfirmTimer);
+                actionConfirmTimer = null;
+            }
+        }
+
+        function armActionConfirmation(actionKey) {
+            actionConfirmState.resetDeck = false;
+            actionConfirmState.clearAll = false;
+            actionConfirmState[actionKey] = true;
+
+            if (actionConfirmTimer) {
+                window.clearTimeout(actionConfirmTimer);
+            }
+
+            actionConfirmTimer = window.setTimeout(() => {
+                clearActionConfirmState();
+                renderSummary();
+            }, 2500);
+        }
+
         function buildChecks(row, factionKey) {
             if (row.id === "unknown" && (factionKey === "deck" || factionKey === "discard")) {
                 return `<div class="check-group"></div>`;
@@ -938,18 +1083,41 @@ TECHDEBT: Move Richese cards to their own expansion
                 .replace(/'/g, "&#39;");
         }
 
+        function isRicheseActive() {
+            const selected = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+                ? state.selectedFactions
+                : factions.map((faction) => faction.key);
+            return selected.includes("richese");
+        }
+
+        function isExpansionActiveForRow(row, expansion) {
+            const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                ? state.selectedExpansions
+                : expansions.map((entry) => entry.key);
+
+            if (selectedExpansions.includes(expansion.key)) {
+                return true;
+            }
+
+            if (row.richeseOnlyE2 && expansion.index === 2 && isRicheseActive()) {
+                return true;
+            }
+
+            return false;
+        }
+
         function buildInfoPopupContent(row) {
             const infoText = (row.info || row.name || "").trim();
-            const paragraphs = infoText
-                .split(/\n\s*\n/)
-                .map((paragraph) => paragraph.trim())
-                .filter(Boolean);
 
-            if (!paragraphs.length) {
+            if (!infoText) {
                 return `<p>${escapeHtml(row.name || "")}</p>`;
             }
 
-            return paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("");
+            try {
+                return marked.parse(infoText);
+            } catch (e) {
+                return `<p>${escapeHtml(infoText)}</p>`;
+            }
         }
 
         function renderTable() {
@@ -1015,15 +1183,29 @@ TECHDEBT: Move Richese cards to their own expansion
                     }
                     return sum + subtotal;
                 }, 0);
-                const setTotal = visibleExpansions.reduce((sum, expansion) => {
+                const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                    ? state.selectedExpansions
+                    : expansions.map((expansion) => expansion.key);
+                const visibleExpansions = expansions.filter((expansion) => selectedExpansions.includes(expansion.key));
+                let setTotal = visibleExpansions.reduce((sum, expansion) => {
                     const numericValue = Number(row.setCounts[expansion.index]);
                     return Number.isFinite(numericValue) ? sum + numericValue : sum;
                 }, 0);
+                if (Number.isFinite(row.sharedExpansionCopies)) {
+                    setTotal = Math.min(setTotal, row.sharedExpansionCopies);
+                }
                 const knownPct = `${Math.round((knownCount / Math.max(setTotal, 1)) * 100) || 0}%`;
 
                 return `
           <tr data-rowid="${row.id}">
-                        ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<td class="${stickyClassByExpansionKey[expansion.key]} setcol" style="background:${backgroundByExpansionKey[expansion.key]};">${row.setCounts[expansion.index] || ""}</td>`).join("")}
+            ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => {
+                    const rawValue = row.setCounts[expansion.index];
+                    let displayValue = rawValue || "";
+                    if (row.sharedExpansionCopies && Number(rawValue) > 0) {
+                        displayValue = `${rawValue}*`;
+                    }
+                    return `<td class="${stickyClassByExpansionKey[expansion.key]} set-col" style="background:${backgroundByExpansionKey[expansion.key]};">${displayValue}</td>`;
+                }).join("")}
             <td class="sticky-left-5 metric-cell">${setTotal}</td>
             <td class="sticky-left-6 metric-cell">${knownCount}</td>
             <td class="sticky-left-8 metric-cell">${activeCount}</td>
@@ -1031,7 +1213,7 @@ TECHDEBT: Move Richese cards to their own expansion
             <td class="sticky-col-info info-cell" style="background:${row.color};"><button class="info-btn" data-rowid="${row.id}" aria-label="Show info for ${row.name}">i</button></td>
             <td class="sticky-col-name name-cell" style="background:${row.color};">${row.name} [${row.type}]</td>
             ${visibleSummaryColumns.map((column) => `<td style="background:${column.key === "deck" ? "rgba(90, 52, 22, 0.5)" : "rgba(168, 116, 66, 0.5)"};">${buildChecks(row, column.key)}</td>`).join("")}
-                        ${visibleFactions.map((faction) => {
+            ${visibleFactions.map((faction) => {
                     const hex = faction.color.replace("#", "");
                     const red = parseInt(hex.substring(0, 2), 16);
                     const green = parseInt(hex.substring(2, 4), 16);
@@ -1074,16 +1256,26 @@ TECHDEBT: Move Richese cards to their own expansion
                     popup.className = "info-popup";
                     popup.innerHTML = buildInfoPopupContent(row);
 
-                    document.body.appendChild(popup);
+                    const popupHost = tableWrap || document.body;
+                    popupHost.appendChild(popup);
 
-                    const rect = btn.getBoundingClientRect();
+                    const buttonRect = btn.getBoundingClientRect();
+                    const hostRect = popupHost.getBoundingClientRect();
                     const popupRect = popup.getBoundingClientRect();
-                    const maxLeft = window.innerWidth - popupRect.width - 12;
-                    const desiredLeft = Math.max(12, Math.min(rect.left, maxLeft));
-                    const desiredTop = rect.bottom + 6;
+                    const padding = 12;
+                    const desiredLeft = buttonRect.left - hostRect.left;
+                    const maxLeft = hostRect.width - popupRect.width - padding;
+                    const clampedLeft = Math.max(padding, Math.min(desiredLeft, maxLeft));
 
-                    popup.style.left = desiredLeft + "px";
-                    popup.style.top = desiredTop + "px";
+                    let desiredTop = buttonRect.bottom - hostRect.top + 6;
+                    const maxTop = hostRect.height - popupRect.height - padding;
+                    if (desiredTop > maxTop) {
+                        desiredTop = buttonRect.top - hostRect.top - popupRect.height - 6;
+                    }
+                    const clampedTop = Math.max(padding, Math.min(desiredTop, maxTop));
+
+                    popup.style.left = clampedLeft + "px";
+                    popup.style.top = clampedTop + "px";
 
                     setTimeout(() => {
                         document.addEventListener("click", function closePopup(e) {
@@ -1131,14 +1323,16 @@ TECHDEBT: Move Richese cards to their own expansion
                     }
                     return sum;
                 }, 0);
-                const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
-                    ? state.selectedExpansions
-                    : expansions.map((expansion) => expansion.key);
-                const visibleExpansions = expansions.filter((expansion) => selectedExpansions.includes(expansion.key));
-                const setTotal = visibleExpansions.reduce((sum, expansion) => {
+                let setTotal = expansions.reduce((sum, expansion) => {
+                    if (!isExpansionActiveForRow(row, expansion)) {
+                        return sum;
+                    }
                     const numericValue = Number(row.setCounts[expansion.index]);
                     return Number.isFinite(numericValue) ? sum + numericValue : sum;
                 }, 0);
+                if (Number.isFinite(row.sharedExpansionCopies)) {
+                    setTotal = Math.min(setTotal, row.sharedExpansionCopies);
+                }
                 const knownPct = `${Math.round((knownCount / Math.max(setTotal, 1)) * 100) || 0}%`;
                 const metricCells = tr.querySelectorAll(".metric-cell");
                 if (metricCells[0]) {
@@ -1170,6 +1364,7 @@ TECHDEBT: Move Richese cards to their own expansion
                 state.selectedExpansions = [...current, expansionKey];
             }
 
+            clearActionConfirmState();
             saveState();
             populateControls();
             buildHeader();
@@ -1178,6 +1373,7 @@ TECHDEBT: Move Richese cards to their own expansion
 
         function toggleExpansionColumnsVisibility() {
             state.showExpansionColumns = state.showExpansionColumns === false;
+            clearActionConfirmState();
             saveState();
             populateControls();
             buildHeader();
@@ -1237,8 +1433,8 @@ TECHDEBT: Move Richese cards to their own expansion
                     ? state.selectedSummaryColumns
                     : summaryColumns.map((column) => column.key);
 
-                const resetButton = `<button type="button" class="pill reset-pill" data-summary-action="reset-deck">Reset</button>`;
-                const clearButton = `<button type="button" class="pill clear-pill" data-summary-action="clear-all">Clear</button>`;
+                const resetButton = `<button type="button" class="pill reset-pill ${actionConfirmState.resetDeck ? "confirming" : ""}" data-summary-action="reset-deck">${actionConfirmState.resetDeck ? "Tap again" : "Reset"}</button>`;
+                const clearButton = `<button type="button" class="pill clear-pill ${actionConfirmState.clearAll ? "confirming" : ""}" data-summary-action="clear-all">${actionConfirmState.clearAll ? "Tap again" : "Clear"}</button>`;
                 const showExpansionColumns = state.showExpansionColumns !== false;
                 const expansionToggleButton = `<button type="button" class="pill secondary ${showExpansionColumns ? "active" : "inactive"}" data-toggle-expansion-columns aria-pressed="${showExpansionColumns}" style="color:#fff;">Show/Hide</button>`;
                 const expansionButtons = expansions.map((expansion) => {
@@ -1270,20 +1466,38 @@ TECHDEBT: Move Richese cards to their own expansion
 
                 const resetDeckButton = summaryActions.querySelector('[data-summary-action="reset-deck"]');
                 if (resetDeckButton) {
-                    resetDeckButton.addEventListener("click", resetToDeckState);
+                    resetDeckButton.addEventListener("click", () => {
+                        if (!actionConfirmState.resetDeck) {
+                            armActionConfirmation("resetDeck");
+                            renderSummary();
+                            return;
+                        }
+
+                        clearActionConfirmState();
+                        resetToDeckState();
+                    });
                 }
 
                 const clearAllButton = summaryActions.querySelector('[data-summary-action="clear-all"]');
                 if (clearAllButton) {
-                    clearAllButton.addEventListener("click", clearAllChecks);
+                    clearAllButton.addEventListener("click", () => {
+                        if (!actionConfirmState.clearAll) {
+                            armActionConfirmation("clearAll");
+                            renderSummary();
+                            return;
+                        }
+
+                        clearActionConfirmState();
+                        clearAllChecks();
+                    });
                 }
 
                 const clearFiltersButton = summaryActions.querySelector('[data-summary-action="clear-filters"]');
                 if (clearFiltersButton) {
                     clearFiltersButton.addEventListener("click", () => {
                         searchBox.value = "";
-                        categoryFilter.value = "All";
                         typeFilter.value = "All";
+                        state.selectedCategories = [...new Set(rows.map((row) => row.category))];
                         saveState();
                         populateControls();
                         buildHeader();
@@ -1335,6 +1549,7 @@ TECHDEBT: Move Richese cards to their own expansion
                 state.selectedFactions = [...current, factionKey];
             }
 
+            clearActionConfirmState();
             saveState();
             buildHeader();
             renderTable();
@@ -1355,6 +1570,7 @@ TECHDEBT: Move Richese cards to their own expansion
                 state.selectedSummaryColumns = [...current, columnKey];
             }
 
+            clearActionConfirmState();
             saveState();
             buildHeader();
             renderTable();
@@ -1364,7 +1580,6 @@ TECHDEBT: Move Richese cards to their own expansion
             const nextChecks = {};
 
             searchBox.value = "";
-            categoryFilter.value = "All";
             typeFilter.value = "All";
             state.selectedFactions = factions.map((faction) => faction.key);
             state.selectedExpansions = expansions.map((expansion) => expansion.key);
@@ -1440,7 +1655,6 @@ TECHDEBT: Move Richese cards to their own expansion
         }
 
         searchBox.addEventListener("input", renderTable);
-        categoryFilter.addEventListener("change", renderTable);
         typeFilter.addEventListener("change", renderTable);
         importFileInput.addEventListener("change", (event) => {
             const [file] = event.target.files;
@@ -1461,6 +1675,9 @@ TECHDEBT: Move Richese cards to their own expansion
             ? state.selectedSummaryColumns
             : summaryColumns.map((column) => column.key);
         state.showExpansionColumns = state.showExpansionColumns !== false;
+        state.selectedCategories = Array.isArray(state.selectedCategories) && state.selectedCategories.length
+            ? state.selectedCategories
+            : [...new Set(rows.map((row) => row.category))];
         buildHeader();
         renderTable();
     </script>
