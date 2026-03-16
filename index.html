@@ -2,6 +2,7 @@
 TECHDEBT: Better logic around Unknown cards
 TECHDEBT: Better logic around boxes never being more than total hand max
 TECHDEBT: Handle the terrorist -1 hand size event
+TECHDEBT: Move Richese cards to their own expansion
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -30,7 +31,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
 
         body {
             margin: 0;
-            padding-bottom: 75px;
+            padding-bottom: 5px;
             font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: linear-gradient(180deg, #0d0f12, #161a20 40%, #0f1217);
             color: var(--text);
@@ -69,9 +70,17 @@ TECHDEBT: Handle the terrorist -1 hand size event
 
         .toolbar {
             display: grid;
-            grid-template-columns: repeat(4, minmax(140px, 1fr));
+            grid-template-columns: 1.6fr 0.6fr 0.6fr 2fr;
             gap: 12px;
-            margin-top: 16px;
+            align-items: end;
+        }
+        .small-field select {
+            padding: 8px 10px;
+            font-size: .9rem;
+        }
+
+        .search-field input {
+            padding: 10px 12px;
         }
 
         .field label {
@@ -123,7 +132,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 8px;
             margin-top: 8px;
             max-height: 340px;
@@ -136,6 +145,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
             gap: 8px;
             flex-wrap: wrap;
             margin-top: 8px;
+            align-items: center;
         }
 
         .summary-actions .pill {
@@ -147,6 +157,11 @@ TECHDEBT: Handle the terrorist -1 hand size event
 
         .summary-actions .pill.reset-pill {
             background: #111;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.clear-pill {
+            background: #666;
             border-color: rgba(255, 255, 255, .14);
         }
 
@@ -178,6 +193,41 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .summary-actions .pill.expansion-pill-e3 {
             background: #6f2fb4;
             border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.filter-pill {
+            background: #171b21;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.export-pill,
+        .summary-actions .pill.import-pill {
+            background: #171b21;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .actions-separator {
+            width: 1px;
+            height: 32px;
+            background: rgba(255, 255, 255, .18);
+            margin: 0 4px;
+            flex: 0 0 auto;
+        }
+
+        .summary-actions .expansion-separator {
+            width: 1px;
+            height: 32px;
+            background: rgba(255, 255, 255, .18);
+            margin: 0 4px;
+            flex: 0 0 auto;
+        }
+
+        .summary-actions .pill.expansion-pill-base,
+        .summary-actions .pill.expansion-pill-e1,
+        .summary-actions .pill.expansion-pill-e2,
+        .summary-actions .pill.expansion-pill-e3 {
+            min-width: 64px;
+            padding: 8px 8px;
         }
 
         .pill {
@@ -294,16 +344,32 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .sticky-col-e3,
         .sticky-left-5,
         .sticky-left-6,
-        .sticky-left-7,
         .sticky-left-8 {
             position: sticky;
             z-index: 2;
+        }
+
+        .sticky-col-pct {
+            position: sticky;
+            z-index: 2;
+        }
+
+        .sticky-col-info {
+            position: sticky;
+            z-index: 2;
+            text-align: center;
+            width: 30px;
+            min-width: 30px;
+            max-width: 30px;
         }
 
         .sticky-col-name {
             position: sticky;
             z-index: 2;
             text-align: left;
+            width: 280px;
+            min-width: 280px;
+            max-width: 280px;
         }
 
         .sticky-col-type {
@@ -312,19 +378,15 @@ TECHDEBT: Handle the terrorist -1 hand size event
             text-align: left;
         }
 
-        .sticky-left-7 {
-            min-width: 64px;
-            width: 64px;
-        }
-
         thead .sticky-col-base,
         thead .sticky-col-e1,
         thead .sticky-col-e2,
         thead .sticky-col-e3,
         thead .sticky-left-5,
         thead .sticky-left-6,
-        thead .sticky-left-7,
+        thead .sticky-col-pct,
         thead .sticky-left-8,
+        thead .sticky-col-info,
         thead .sticky-col-name,
         thead .sticky-col-type {
             z-index: 4;
@@ -341,6 +403,12 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .metric-cell {
             color: #fff;
             font-weight: 700;
+        }
+
+        .info-cell {
+            color: #fff;
+            font-weight: 700;
+            text-align: center;
         }
 
         .name-cell small {
@@ -400,7 +468,8 @@ TECHDEBT: Handle the terrorist -1 hand size event
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            margin-top: 10px;
+            align-items: center;
+            margin-top: 0;
         }
 
         .legend span {
@@ -487,35 +556,24 @@ TECHDEBT: Handle the terrorist -1 hand size event
     <div class="app">
         <section class="hero">
             <div class="card">
-                <h1>Atreides Tracker</h1>
+                <!--<h1>Atreides Tracker</h1>
                 <p class="subtitle">Interactive HTML version of the tracker sheet. Check off discoveries by faction,
-                    filter the table, and keep progress saved automatically in your browser.</p>
+                    filter the table, and keep progress saved automatically in your browser.</p>-->
                 <div class="toolbar">
-                    <div class="field">
+                    <div class="field search-field">
                         <label for="searchBox">Search cards</label>
-                        <input id="searchBox" type="text" placeholder="Karama, poison, harkonnen..." />
+                        <input id="searchBox" type="text" placeholder="Karama, poison, stunner..." />
                     </div>
-                    <div class="field">
+                    <div class="field small-field">
                         <label for="categoryFilter">Category</label>
                         <select id="categoryFilter"></select>
                     </div>
-                    <div class="field">
+                    <div class="field small-field">
                         <label for="typeFilter">Type</label>
                         <select id="typeFilter"></select>
                     </div>
+                    <div class="legend" id="legend"></div>
                 </div>
-                <div class="button-row">
-                    <button id="clearFiltersBtn" class="secondary">Clear filters</button>
-                    <button id="resetChecksBtn" class="warn">Reset all checks</button>
-                    <button id="exportBtn" class="secondary">Export progress</button>
-                    <button id="importBtn" class="secondary">Import progress</button>
-                    <p class="footer-note">Progress autosaves locally. Export/import uses a JSON file so you can move the
-                        tracker between devices.</p>
-                </div>
-                <div class="legend" id="legend"></div>
-                <div class="tiny" style="margin-top:8px;">Expansions</div>
-                <div class="summary-actions" id="expansionActions"></div>
-                <div style="margin-top:8px;" class="tiny">Factions</div>
                 <div class="summary-actions" id="summaryActions"></div>
                 <div class="summary-grid" id="factionSummary"></div>
             </div>
@@ -665,7 +723,6 @@ TECHDEBT: Handle the terrorist -1 hand size event
         const searchBox = document.getElementById("searchBox");
         const categoryFilter = document.getElementById("categoryFilter");
         const typeFilter = document.getElementById("typeFilter");
-        const expansionActions = document.getElementById("expansionActions");
         const trackerHead = document.getElementById("trackerHead");
         const trackerBody = document.getElementById("trackerBody");
         const factionSummary = document.getElementById("factionSummary");
@@ -736,27 +793,6 @@ TECHDEBT: Handle the terrorist -1 hand size event
                 ? state.selectedExpansions
                 : expansions.map((expansion) => expansion.key);
 
-            if (expansionActions) {
-                const showExpansionColumns = state.showExpansionColumns !== false;
-                const toggleButton = `<button type="button" class="pill secondary ${showExpansionColumns ? "active" : "inactive"}" data-toggle-expansion-columns aria-pressed="${showExpansionColumns}" style="color:#fff;">Show/Hide</button>`;
-                const expansionButtons = expansions.map((expansion) => {
-                    const isActive = state.selectedExpansions.includes(expansion.key);
-                    return `<button type="button" class="pill ${expansion.className} ${isActive ? "active" : "inactive"}" data-expansion-toggle="${expansion.key}" aria-pressed="${isActive}" style="color:#fff;">${expansion.label}</button>`;
-                }).join("");
-
-                expansionActions.innerHTML = toggleButton + expansionButtons;
-
-                const toggleExpansionColumnsButton = expansionActions.querySelector("[data-toggle-expansion-columns]");
-                if (toggleExpansionColumnsButton) {
-                    toggleExpansionColumnsButton.addEventListener("click", toggleExpansionColumnsVisibility);
-                }
-
-                expansionActions.querySelectorAll("[data-expansion-toggle]").forEach((button) => {
-                    button.addEventListener("click", () => {
-                        toggleExpansion(button.dataset.expansionToggle);
-                    });
-                });
-            }
 
             legend.innerHTML = [
                 ...new Map(rows.map((row) => [row.category, row.color])).entries()
@@ -790,12 +826,12 @@ TECHDEBT: Handle the terrorist -1 hand size event
             const row = document.createElement("tr");
             row.innerHTML = `
         ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<th class="${stickyClassByExpansionKey[expansion.key]} setcol" style="background:#333; color:#fff;">${expansion.label}</th>`).join("")}
-        <th class="sticky-left-5" style="background:#333; color:#fff;">Ttl</th>
-        <th class="sticky-left-6" style="background:#333; color:#fff;">Knw</th>
-        <th class="sticky-left-7" style="background:#333; color:#fff;">%</th>
-        <th class="sticky-left-8" style="background:#333; color:#fff;">Act</th>
-        <th class="sticky-col-name" style="background:#333; color:#fff;">Name</th>
-        <th class="sticky-col-type" style="background:#333; color:#fff;">Type</th>
+        <th class="sticky-left-5" style="background:#333; color:#fff;">T</th>
+        <th class="sticky-left-6" style="background:#333; color:#fff;">K</th>
+        <th class="sticky-left-8" style="background:#333; color:#fff;">A</th>
+        <!--<th class="sticky-col-pct" style="background:#333; color:#fff;">%</th>-->
+        <th class="sticky-col-info" style="background:#333; color:#fff;">i</th>
+        <th class="sticky-col-name" style="background:#333; color:#fff;">Name [Type]</th>
         ${visibleSummaryColumns.map((column) => `<th class="faction-head" style="background:${column.color}; color:#fff;">${column.label}</th>`).join("")}
         ${visibleFactions.map((faction) => `<th class="faction-head" style="background:${faction.color}; color:${faction.label === "Richese" ? "#111" : "#fff"};">${faction.label}</th>`).join("")}
       `;
@@ -811,7 +847,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
         }
 
         function rowMatches(row, filters) {
-            const searchText = `${row.name} ${row.type} ${row.category}`.toLowerCase();
+            const searchText = `${row.name} ${row.type} ${row.category} ${row.info || ""}`.toLowerCase();
             const searchOk = !filters.search || searchText.includes(filters.search);
             const categoryOk = filters.category === "All" || row.category === filters.category;
             const typeOk = filters.type === "All" || row.type === filters.type;
@@ -990,13 +1026,10 @@ TECHDEBT: Handle the terrorist -1 hand size event
                         ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<td class="${stickyClassByExpansionKey[expansion.key]} setcol" style="background:${backgroundByExpansionKey[expansion.key]};">${row.setCounts[expansion.index] || ""}</td>`).join("")}
             <td class="sticky-left-5 metric-cell">${setTotal}</td>
             <td class="sticky-left-6 metric-cell">${knownCount}</td>
-            <td class="sticky-left-7 metric-cell">${knownPct}</td>
             <td class="sticky-left-8 metric-cell">${activeCount}</td>
-            <td class="sticky-col-name name-cell" style="background:${row.color};">
-    <button class="info-btn" data-rowid="${row.id}" aria-label="Show info for ${row.name}">i</button>
-    ${row.name}
-</td>
-            <td class="sticky-col-type type-cell" style="background:${row.color};">${row.type}</td>
+            <!--<td class="sticky-col-pct metric-cell">${knownPct}</td>-->
+            <td class="sticky-col-info info-cell" style="background:${row.color};"><button class="info-btn" data-rowid="${row.id}" aria-label="Show info for ${row.name}">i</button></td>
+            <td class="sticky-col-name name-cell" style="background:${row.color};">${row.name} [${row.type}]</td>
             ${visibleSummaryColumns.map((column) => `<td style="background:${column.key === "deck" ? "rgba(90, 52, 22, 0.5)" : "rgba(168, 116, 66, 0.5)"};">${buildChecks(row, column.key)}</td>`).join("")}
                         ${visibleFactions.map((faction) => {
                     const hex = faction.color.replace("#", "");
@@ -1114,11 +1147,11 @@ TECHDEBT: Handle the terrorist -1 hand size event
                 if (metricCells[1]) {
                     metricCells[1].textContent = `${knownCount}`;
                 }
-                if (metricCells[2]) {
+                /*if (metricCells[2]) {
                     metricCells[2].textContent = knownPct;
-                }
-                if (metricCells[3]) {
-                    metricCells[3].textContent = `${activeCount}`;
+                }*/
+                if (metricCells[2]) {
+                    metricCells[2].textContent = `${activeCount}`;
                 }
             });
         }
@@ -1205,6 +1238,15 @@ TECHDEBT: Handle the terrorist -1 hand size event
                     : summaryColumns.map((column) => column.key);
 
                 const resetButton = `<button type="button" class="pill reset-pill" data-summary-action="reset-deck">Reset</button>`;
+                const clearButton = `<button type="button" class="pill clear-pill" data-summary-action="clear-all">Clear</button>`;
+                const showExpansionColumns = state.showExpansionColumns !== false;
+                const expansionToggleButton = `<button type="button" class="pill secondary ${showExpansionColumns ? "active" : "inactive"}" data-toggle-expansion-columns aria-pressed="${showExpansionColumns}" style="color:#fff;">Show/Hide</button>`;
+                const expansionButtons = expansions.map((expansion) => {
+                    const isActive = state.selectedExpansions.includes(expansion.key);
+                    return `<button type="button" class="pill ${expansion.className} ${isActive ? "active" : "inactive"}" data-expansion-toggle="${expansion.key}" aria-pressed="${isActive}" style="color:#fff;">${expansion.label}</button>`;
+                }).join("");
+                const preExpansionControls = `<span class="expansion-separator" aria-hidden="true"></span>`;
+                const postExpansionActions = `<span class="actions-separator" aria-hidden="true"></span><button type="button" class="pill filter-pill" data-summary-action="clear-filters">Unfilter</button><button type="button" class="pill export-pill" data-summary-action="export-progress">Export</button><button type="button" class="pill import-pill" data-summary-action="import-progress">Import</button>`;
 
                 const summaryButtons = summaryColumns.map((column) => {
                     const isActive = visibleSummaryKeys.includes(column.key);
@@ -1224,12 +1266,51 @@ TECHDEBT: Handle the terrorist -1 hand size event
                     return `<button type="button" class="pill ${pillClass} ${isActive ? "active" : "inactive"}" data-summary-toggle="${column.key}" aria-pressed="${isActive}"><span>${column.label}</span><strong>${columnChecked}/${columnAvailable} (${pct}%)</strong></button>`;
                 }).join("");
 
-                summaryActions.innerHTML = resetButton + summaryButtons;
+                summaryActions.innerHTML = resetButton + clearButton + summaryButtons + preExpansionControls + expansionToggleButton + expansionButtons + postExpansionActions;
 
                 const resetDeckButton = summaryActions.querySelector('[data-summary-action="reset-deck"]');
                 if (resetDeckButton) {
                     resetDeckButton.addEventListener("click", resetToDeckState);
                 }
+
+                const clearAllButton = summaryActions.querySelector('[data-summary-action="clear-all"]');
+                if (clearAllButton) {
+                    clearAllButton.addEventListener("click", clearAllChecks);
+                }
+
+                const clearFiltersButton = summaryActions.querySelector('[data-summary-action="clear-filters"]');
+                if (clearFiltersButton) {
+                    clearFiltersButton.addEventListener("click", () => {
+                        searchBox.value = "";
+                        categoryFilter.value = "All";
+                        typeFilter.value = "All";
+                        saveState();
+                        populateControls();
+                        buildHeader();
+                        renderTable();
+                    });
+                }
+
+                const exportProgressButton = summaryActions.querySelector('[data-summary-action="export-progress"]');
+                if (exportProgressButton) {
+                    exportProgressButton.addEventListener("click", exportProgress);
+                }
+
+                const importProgressButton = summaryActions.querySelector('[data-summary-action="import-progress"]');
+                if (importProgressButton) {
+                    importProgressButton.addEventListener("click", () => importFileInput.click());
+                }
+
+                const toggleExpansionColumnsButton = summaryActions.querySelector("[data-toggle-expansion-columns]");
+                if (toggleExpansionColumnsButton) {
+                    toggleExpansionColumnsButton.addEventListener("click", toggleExpansionColumnsVisibility);
+                }
+
+                summaryActions.querySelectorAll("[data-expansion-toggle]").forEach((button) => {
+                    button.addEventListener("click", () => {
+                        toggleExpansion(button.dataset.expansionToggle);
+                    });
+                });
 
                 summaryActions.querySelectorAll("[data-summary-toggle]").forEach((button) => {
                     button.addEventListener("click", () => {
@@ -1282,6 +1363,14 @@ TECHDEBT: Handle the terrorist -1 hand size event
         function resetToDeckState() {
             const nextChecks = {};
 
+            searchBox.value = "";
+            categoryFilter.value = "All";
+            typeFilter.value = "All";
+            state.selectedFactions = factions.map((faction) => faction.key);
+            state.selectedExpansions = expansions.map((expansion) => expansion.key);
+            state.selectedSummaryColumns = summaryColumns.map((column) => column.key);
+            state.showExpansionColumns = true;
+
             rows.forEach((row) => {
                 if (row.id === "unknown") {
                     return;
@@ -1303,6 +1392,12 @@ TECHDEBT: Handle the terrorist -1 hand size event
             state.checks = nextChecks;
             saveState();
             buildHeader();
+            renderTable();
+        }
+
+        function clearAllChecks() {
+            state.checks = {};
+            saveState();
             renderTable();
         }
 
@@ -1347,21 +1442,6 @@ TECHDEBT: Handle the terrorist -1 hand size event
         searchBox.addEventListener("input", renderTable);
         categoryFilter.addEventListener("change", renderTable);
         typeFilter.addEventListener("change", renderTable);
-        document.getElementById("clearFiltersBtn").addEventListener("click", () => {
-            searchBox.value = "";
-            categoryFilter.value = "All";
-            typeFilter.value = "All";
-            state.selectedFactions = factions.map((faction) => faction.key);
-            state.selectedExpansions = expansions.map((expansion) => expansion.key);
-            state.selectedSummaryColumns = summaryColumns.map((column) => column.key);
-            state.showExpansionColumns = true;
-            populateControls();
-            buildHeader();
-            renderTable();
-        });
-        document.getElementById("resetChecksBtn").addEventListener("click", resetAllChecks);
-        document.getElementById("exportBtn").addEventListener("click", exportProgress);
-        document.getElementById("importBtn").addEventListener("click", () => importFileInput.click());
         importFileInput.addEventListener("change", (event) => {
             const [file] = event.target.files;
             if (file) {
