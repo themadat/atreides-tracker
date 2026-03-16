@@ -61,7 +61,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
             top: 10px;
             right: 10px;
             background: #171b21;
-            border: 1px solid rgba(255,255,255,.14);
+            border: 1px solid rgba(255, 255, 255, .14);
             color: #fff;
             border-radius: 10px;
             padding: 6px 10px;
@@ -211,17 +211,17 @@ TECHDEBT: Handle the terrorist -1 hand size event
             border-color: rgba(255, 255, 255, .14);
         }
 
-        .summary-actions .pill.expansion-pill-e1 {
+        .summary-actions .pill.expansion-pill-exp1 {
             background: #8f6d39;
             border-color: rgba(255, 255, 255, .14);
         }
 
-        .summary-actions .pill.expansion-pill-e2 {
+        .summary-actions .pill.expansion-pill-exp2 {
             background: #ac1b6b;
             border-color: rgba(255, 255, 255, .14);
         }
 
-        .summary-actions .pill.expansion-pill-e3 {
+        .summary-actions .pill.expansion-pill-exp3 {
             background: #6f2fb4;
             border-color: rgba(255, 255, 255, .14);
         }
@@ -254,9 +254,9 @@ TECHDEBT: Handle the terrorist -1 hand size event
         }
 
         .summary-actions .pill.expansion-pill-base,
-        .summary-actions .pill.expansion-pill-e1,
-        .summary-actions .pill.expansion-pill-e2,
-        .summary-actions .pill.expansion-pill-e3 {
+        .summary-actions .pill.expansion-pill-exp1,
+        .summary-actions .pill.expansion-pill-exp2,
+        .summary-actions .pill.expansion-pill-exp3 {
             min-width: 64px;
             padding: 8px 8px;
         }
@@ -309,17 +309,17 @@ TECHDEBT: Handle the terrorist -1 hand size event
             border-color: rgba(255, 255, 255, .14);
         }
 
-        .expansion-pill-e1 {
+        .expansion-pill-exp1 {
             background: #8f6d39;
             border-color: rgba(255, 255, 255, .14);
         }
 
-        .expansion-pill-e2 {
+        .expansion-pill-exp2 {
             background: #ac1b6b;
             border-color: rgba(255, 255, 255, .14);
         }
 
-        .expansion-pill-e3 {
+        .expansion-pill-exp3 {
             background: #6f2fb4;
             border-color: rgba(255, 255, 255, .14);
         }
@@ -342,7 +342,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
             border: 1px solid rgba(255, 255, 255, .08);
             border-radius: 0;
             padding: 0;
-            padding-bottom: 50px;
+            padding-bottom: 32px;
             overflow: auto;
             box-shadow: 0 16px 36px rgba(0, 0, 0, .28);
             position: relative;
@@ -359,7 +359,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
         th,
         td {
             border: 1px solid #acacac;
-            padding: 2px 4px;
+            padding: 1px 1px;
             text-align: center;
             vertical-align: middle;
         }
@@ -371,101 +371,111 @@ TECHDEBT: Handle the terrorist -1 hand size event
             background: var(--sticky);
         }
 
-        .sticky-col-base,
-        .sticky-col-e1,
-        .sticky-col-e2,
-        .sticky-col-e3,
-        .sticky-left-5,
-        .sticky-left-6,
-        .sticky-left-8 {
+        .column-header-base,
+        .column-header-exp1,
+        .column-header-exp2,
+        .column-header-exp3 {
             position: sticky;
             z-index: 2;
+            text-align: center;
+            width: 32px;
+            min-width: 32px;
+            max-width: 32px;
+            font-size: .75rem;
         }
 
-        .sticky-col-pct {
+        .column-header-total,
+        .column-header-known,
+        .column-header-pct,
+        .column-header-active {
             position: sticky;
             z-index: 2;
+            text-align: center;
+            width: 16px;
+            min-width: 16px;
+            max-width: 16px;
+            font-size: .75rem;
         }
 
-        .sticky-col-info {
+        .column-header-info {
             position: sticky;
             z-index: 2;
             text-align: center;
             width: 22px;
             min-width: 22px;
             max-width: 22px;
+            font-size: .75rem;
         }
 
-        .sticky-col-name {
+        .column-header-name {
             position: sticky;
             z-index: 2;
             text-align: left;
-            width: 24 0px;
-            min-width: 237px;
-            max-width: 237px;
+            width: 125px;
+            font-size: .75rem;
         }
 
-        .sticky-col-type {
+        .column-header-type {
             position: sticky;
             z-index: 2;
             text-align: left;
+            width: 160px;
+            font-size: .75rem;
         }
 
-        thead .sticky-col-base,
-        thead .sticky-col-e1,
-        thead .sticky-col-e2,
-        thead .sticky-col-e3,
-        thead .sticky-left-5,
-        thead .sticky-left-6,
-        thead .sticky-col-pct,
-        thead .sticky-left-8,
-        thead .sticky-col-info,
-        thead .sticky-col-name,
-        thead .sticky-col-type {
+        .column-header-factions {
+            min-width: 90px;
+            color: #fff;
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        thead .column-header-base,
+        thead .column-header-exp1,
+        thead .column-header-exp2,
+        thead .column-header-exp3,
+        thead .column-header-total,
+        thead .column-header-known,
+        thead .column-header-pct,
+        thead .column-header-active,
+        thead .column-header-info,
+        thead .column-header-name,
+        thead .column-header-type,
+        thead .column-header-factions {
             z-index: 4;
         }
 
-        .set-col {
-            width: 34px;
-            color: #fafafa;
-            font-weight: 00;
-        }
-
-        .name-cell,
-        .type-cell,
-        .metric-cell {
-            color: #fff;
-            font-weight: 700;
-        }
-
-        .name-cell {
+        .column-cells-cardSet {
+            color: #ffffff;
             font-size: .75rem;
-            line-height: 1.2;
+            font-weight: 700;
+            text-align: center;
+            width: 32px;
         }
 
-        .info-cell {
-            color: #fff;
+        .column-cells-metric {
+            color: #ffffff;
+            font-size: .75rem;
+            font-weight: 700;
+            text-align: center;
+            background: #2f2f2f;
+            width: 12px;
+        }
+
+        .column-cells-info {
+            color: #ffffff;
             font-weight: 700;
             text-align: center;
             padding: 0;
         }
 
-        .name-cell small {
-            display: block;
-            font-weight: 500;
-            opacity: .9;
-        }
-
-        .type-cell {
-            white-space: nowrap;
-        }
-
-        .faction-head {
-            min-width: 90px;
-            color: #fff;
-            font-size: .85rem;
-            text-transform: uppercase;
-            letter-spacing: .04em;
+        .column-cells-name,
+        .column-cells-type {
+            color: #ffffff;
+            font-size: .75rem;
+            font-weight: 700;
+            line-height: 1.2;
         }
 
         .check-group {
@@ -498,7 +508,6 @@ TECHDEBT: Handle the terrorist -1 hand size event
                 height: 24px;
             }
         }
-
 
         .tiny {
             font-size: .78rem;
@@ -701,7 +710,8 @@ Play as part of your Battle Plan. Kills opponent's leader before battle is resol
 
 Exp1:
 - Basillia Weapon` },
-            { setCounts: [1, 0, 0, 0], color: "#9a3f11", id: "lasgun", name: "Lasgun", type: "Weapon Special", category: "Weapons", info: `
+            {
+                setCounts: [1, 0, 0, 0], color: "#9a3f11", id: "lasgun", name: "Lasgun", type: "Weapon Special", category: "Weapons", info: `
 **Lasgun [Weapon Special]**
 
 Play as part of your Battle Plan. Automatically kills opponent's leader regardless of defense card used. You may keep this card if you win this battle.
@@ -711,13 +721,13 @@ If anyone plays a Shield in this battle, all forces, leaders, and spice in this 
                 setCounts: [0, 1, 1, 0], color: "#9a3f11", id: "artillery-strike", name: "Artillery Strike", type: "Weapon Special", category: "Weapons", sharedExpansionCopies: 1,
                 info: `
 **Artillery Strike [Weapon Special]**  
-_Upsert in Deck (Replace E1 Copy/Use Alone)_` },
+_Upsert Deck (Replace Exp1 Copy/Use Alone)_` },
             { setCounts: [0, 0, 1, 0], color: "#B67C58", id: "richese-mirror-weapon", name: "Mirror Weapon", type: "Weapon Special", category: "Weapons", richeseOnlyE2: true, info: `**Mirror Weapon [Weapon Special]**\n\n_Richese Treachery Card_` },
             {
                 setCounts: [0, 1, 1, 0], color: "#9a3f11", id: "poison-tooth", name: "Poison Tooth", type: "Weapon Poison Special", category: "Weapons", sharedExpansionCopies: 1,
                 info: `
 **Poison Tooth [Weapon Poison Special]**  
-_Upsert in Deck (Replace E1 Copy/Use Alone)_` },
+_Upsert Deck (Replace Exp1 Copy/Use Alone)_` },
             { setCounts: [0, 1, 0, 0], color: "#9a3f11", id: "poison-blade", name: "Poison Blade", type: "Weapon Special", category: "Weapons", info: `**Poison Blade [Weapon Special]**` },
             { setCounts: [0, 0, 1, 0], color: "#B67C58", id: "richese-stone-burner", name: "Stone Burner", type: "Weapon Special", category: "Weapons", richeseOnlyE2: true, info: `**Stone Burner [Weapon Special]**\n\n_Richese Treachery Card_` },
             { setCounts: [0, 1, 0, 0], color: "#9a3f11", id: "weirding-way", name: "Weirding Way", type: "Weapon Defense Special", category: "Weapons", info: `**Weirding Way [Weapon Defense Special]**` },
@@ -725,30 +735,35 @@ _Upsert in Deck (Replace E1 Copy/Use Alone)_` },
             { setCounts: [0, 1, 0, 0], color: "#243965", id: "chemistry", name: "Chemistry", type: "Defense Weapon Special", category: "Defenses", info: `**Chemistry [Defense Weapon Special]**` },
             { setCounts: [0, 0, 1, 0], color: "#6D7C90", id: "richese-portable-snooper", name: "Portable Snooper", type: "Defense Poison", category: "Defenses", richeseOnlyE2: true, info: `**Portable Snooper [Defense Poison]**\n\n_Richese Treachery Card_` },
             { setCounts: [0, 1, 0, 0], color: "#243965", id: "shield-snooper", name: "Shield Snooper", type: "Defense Special", category: "Defenses", info: `**Shield Snooper [Defense Special]**` },
-            { setCounts: [4, 1, 0, 0], color: "#243965", id: "shield", name: "Shield", type: "Defense Projectile", category: "Defenses", info: `
+            {
+                setCounts: [4, 1, 0, 0], color: "#243965", id: "shield", name: "Shield", type: "Defense Projectile", category: "Defenses", info: `
 **Shield [Defense Projectile]**
 
 Play as part of your Battle Plan. Protects your leader from a projectile weapon in this battle. You may keep this card if you win this battle.` },
-            { setCounts: [4, 1, 0, 0], color: "#243965", id: "snooper", name: "Snooper", type: "Defense Poison", category: "Defenses", info: `
+            {
+                setCounts: [4, 1, 0, 0], color: "#243965", id: "snooper", name: "Snooper", type: "Defense Poison", category: "Defenses", info: `
 **Snooper [Defense Poison]**
 
 Play as part of your Battle Plan. Protects your leader from a poison weapon in this battle. You may keep this card if you win this battle.` },
 
             { setCounts: [0, 1, 0, 0], color: "#4b5d22", id: "amal", name: "Amal", type: "Special", category: "Specials", info: `**Amal [Special]**` },
-            { setCounts: [3, 0, 0, 0], color: "#4b5d22", id: "cheap-heroine", name: "Cheap Hero(ine)", type: "Special Leader", category: "Specials", info: `
+            {
+                setCounts: [3, 0, 0, 0], color: "#4b5d22", id: "cheap-heroine", name: "Cheap Hero(ine)", type: "Special Leader", category: "Specials", info: `
 **Cheap Hero(ine) [Special Leader]**
 
 Play as a leader with zero strength on your Battle Plan and discard after the battle.
 
 You may also play a weapon and a defense. The cheap hero may be played in place of a leader or when you have no leaders available.` },
             { setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-distrans", name: "Distrans", type: "Special", category: "Specials", richeseOnlyE2: true, info: `**Distrans [Special]**\n\n_Richese Treachery Card_` },
-            { setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "family-atomics", name: "Family Atomics", type: "Special Storm", category: "Specials", info: `
+            {
+                setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "family-atomics", name: "Family Atomics", type: "Special Storm", category: "Specials", info: `
 **Family Atomics [Special Storm]**
 
 After the first game turn, play after the storm movement is calculated, but before the storm is moved, but only if you have one or more forces on the Shield Wall or a territory adjacent to the Shield Wall with no storm between your sector and the Wall.
 
 All forces on the Shield Wall are destroyed. Place the Destroyed Shield Wall token on the Shield Wall as a reminder. The Imperial Basin, Arrakeen and Carthag are no longer protected from the storm for the rest of the game.` },
-            { setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "hajr", name: "Hajr", type: "Special Movement", category: "Specials", info: `
+            {
+                setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "hajr", name: "Hajr", type: "Special Movement", category: "Specials", info: `
 **Hajr [Special Movement]**
 
 Play during Movement Phase.
@@ -796,17 +811,20 @@ Discard after use.` },
             { setCounts: [0, 0, 0, 1], color: "#4b5d22", id: "reinforcements", name: "Reinforcements", type: "Special", category: "Specials", info: `**Reinforcements [Special]**` },
             { setCounts: [0, 0, 1, 0], color: "#868E67", id: "richese-semuta-drug", name: "Semuta Drug", type: "Special", category: "Specials", richeseOnlyE2: true, info: `**Semuta Drug [Special]**\n\n_Richese Treachery Card_` },
             { setCounts: [0, 1, 0, 0], color: "#4b5d22", id: "thumper", name: "Thumper", type: "Special Spice Blow", category: "Specials", info: `**Thumper [Special Spice Blow]**` },
-            { setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "tleilaxu-ghola", name: "Tleilaxu Ghola", type: "Special", category: "Specials", info: `
+            {
+                setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "tleilaxu-ghola", name: "Tleilaxu Ghola", type: "Special", category: "Specials", info: `
 **Tleilaxu Ghola [Special]**
 
 Play at any time to gain an extra revival.
 
 You may immediately revive 1 of your leaders regardless of how many leaders you have in the tanks or up to 5 of your forces from the Tleilaxu Tanks to your reserves at no cost in spice. You still get your normal revivals.` },
-            { setCounts: [2, 0, 0, 0], color: "#4b5d22", id: "truthtrance", name: "Truthtrance", type: "Special", category: "Specials", info: `
+            {
+                setCounts: [2, 0, 0, 0], color: "#4b5d22", id: "truthtrance", name: "Truthtrance", type: "Special", category: "Specials", info: `
 **Truthtrance [Special]**
 
 Publicly ask one other player a single yes/no question about the game that must be answered publicly. The game pauses until an answer is given. The player must answer "yes" or "no" truthfully.` },
-            { setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "weather-control", name: "Weather Control", type: "Special Storm", category: "Specials", info: `
+            {
+                setCounts: [1, 0, 0, 0], color: "#4b5d22", id: "weather-control", name: "Weather Control", type: "Special Storm", category: "Specials", info: `
 **Weather Control [Special Storm]**
 
 After the first game turn, play during the Storm Phase before the Storm Marker is moved.
@@ -837,9 +855,9 @@ Exp1:
 
         const expansions = [
             { key: "base", label: "Base", index: 0, className: "expansion-pill-base" },
-            { key: "e1", label: "E1", index: 1, className: "expansion-pill-e1" },
-            { key: "e2", label: "E2", index: 2, className: "expansion-pill-e2" },
-            { key: "e3", label: "E3", index: 3, className: "expansion-pill-e3" }
+            { key: "exp1", label: "Exp1", index: 1, className: "expansion-pill-exp1" },
+            { key: "exp2", label: "Exp2", index: 2, className: "expansion-pill-exp2" },
+            { key: "exp3", label: "Exp3", index: 3, className: "expansion-pill-exp3" }
         ];
         const summaryColumns = [
             { key: "deck", label: "Deck", color: "#5a3416" },
@@ -983,23 +1001,24 @@ Exp1:
             const visibleSummaryColumns = summaryColumns.filter((column) => selectedSummary.includes(column.key));
 
             const stickyClassByExpansionKey = {
-                base: "sticky-col-base",
-                e1: "sticky-col-e1",
-                e2: "sticky-col-e2",
-                e3: "sticky-col-e3"
+                base: "column-header-base",
+                exp1: "column-header-exp1",
+                exp2: "column-header-exp2",
+                exp3: "column-header-exp3"
             };
 
             const row = document.createElement("tr");
             row.innerHTML = `
-        ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<th class="${stickyClassByExpansionKey[expansion.key]} set-col" style="background:#333; color:#fff;">${expansion.label}</th>`).join("")}
-        <th class="sticky-left-5" style="background:#333; color:#fff;">T</th>
-        <th class="sticky-left-6" style="background:#333; color:#fff;">K</th>
-        <th class="sticky-left-8" style="background:#333; color:#fff;">A</th>
-        <!--<th class="sticky-col-pct" style="background:#333; color:#fff;">%</th>-->
-        <th class="sticky-col-info" style="background:#333; color:#fff;">i</th>
-        <th class="sticky-col-name" style="background:#333; color:#fff;">Name [Type]</th>
-        ${visibleSummaryColumns.map((column) => `<th class="faction-head" style="background:${column.color}; color:#fff;">${column.label}</th>`).join("")}
-        ${visibleFactions.map((faction) => `<th class="faction-head" style="background:${faction.color}; color:${faction.label === "Richese" ? "#111" : "#fff"};">${faction.label}</th>`).join("")}
+        ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<th class="${stickyClassByExpansionKey[expansion.key]} column-cells-cardSet" style="background:#333; color:#fff;">${expansion.label}</th>`).join("")}
+        <th class="column-header-total" style="background:#333; color:#fff;">T</th>
+        <th class="column-header-known" style="background:#333; color:#fff;">K</th>
+        <th class="column-header-active" style="background:#333; color:#fff;">A</th>
+        <!--<th class="column-header-pct" style="background:#333; color:#fff;">%</th>-->
+        <th class="column-header-info" style="background:#333; color:#fff;">i</th>
+        <th class="column-header-name" style="background:#333; color:#fff;">Name</th>
+        <th class="column-header-type" style="background:#333; color:#fff;">Type</th>
+        ${visibleSummaryColumns.map((column) => `<th class="column-header-factions" style="background:${column.color}; color:#fff;">${column.label}</th>`).join("")}
+        ${visibleFactions.map((faction) => `<th class="column-header-factions" style="background:${faction.color}; color:${faction.label === "Richese" ? "#111" : "#fff"};">${faction.label}</th>`).join("")}
       `;
             trackerHead.appendChild(row);
         }
@@ -1208,17 +1227,17 @@ Exp1:
             const visibleExpansions = expansions.filter((expansion) => selectedExpansions.includes(expansion.key));
 
             const stickyClassByExpansionKey = {
-                base: "sticky-col-base",
-                e1: "sticky-col-e1",
-                e2: "sticky-col-e2",
-                e3: "sticky-col-e3"
+                base: "column-header-base",
+                exp1: "column-header-exp1",
+                exp2: "column-header-exp2",
+                exp3: "column-header-exp3"
             };
 
             const backgroundByExpansionKey = {
                 base: "#272727",
-                e1: "#8f6d39",
-                e2: "#ac1b6b",
-                e3: "#6f2fb4"
+                exp1: "#8f6d39",
+                exp2: "#ac1b6b",
+                exp3: "#6f2fb4"
             };
 
             trackerBody.innerHTML = visibleRows.map((row) => {
@@ -1274,14 +1293,15 @@ Exp1:
                     if (row.sharedExpansionCopies && Number(rawValue) > 0) {
                         displayValue = `${rawValue}*`;
                     }
-                    return `<td class="${stickyClassByExpansionKey[expansion.key]} set-col" style="background:${backgroundByExpansionKey[expansion.key]};">${displayValue}</td>`;
+                    return `<td class="${stickyClassByExpansionKey[expansion.key]} column-cells-cardSet" style="background:${backgroundByExpansionKey[expansion.key]};">${displayValue}</td>`;
                 }).join("")}
-            <td class="sticky-left-5 metric-cell">${setTotal}</td>
-            <td class="sticky-left-6 metric-cell">${knownCount}</td>
-            <td class="sticky-left-8 metric-cell">${activeCount}</td>
-            <!--<td class="sticky-col-pct metric-cell">${knownPct}</td>-->
-            <td class="sticky-col-info info-cell" style="background:${row.color};"><button class="info-btn" data-rowid="${row.id}" aria-label="Show info for ${row.name}">i</button></td>
-            <td class="sticky-col-name name-cell" style="background:${row.color};">${row.name} [${row.type}]</td>
+            <td class="column-header-total column-cells-metric">${setTotal}</td>
+            <td class="column-header-known column-cells-metric">${knownCount}</td>
+            <td class="column-header-active column-cells-metric">${activeCount}</td>
+            <!--<td class="column-header-pct column-cells-metric">${knownPct}</td>-->
+            <td class="column-header-info column-cells-info" style="background:${row.color};"><button class="info-btn" data-rowid="${row.id}" aria-label="Show info for ${row.name}">i</button></td>
+            <td class="column-header-name column-cells-name" style="background:${row.color};">${row.name}</td>
+            <td class="column-header-type column-cells-type" style="background:${row.color};">${row.type}</td>
             ${visibleSummaryColumns.map((column) => `<td style="background:${column.key === "deck" ? "rgba(90, 52, 22, 0.5)" : "rgba(168, 116, 66, 0.5)"};">${buildChecks(row, column.key)}</td>`).join("")}
             ${visibleFactions.map((faction) => {
                     const hex = faction.color.replace("#", "");
@@ -1404,7 +1424,7 @@ Exp1:
                     setTotal = Math.min(setTotal, row.sharedExpansionCopies);
                 }
                 const knownPct = `${Math.round((knownCount / Math.max(setTotal, 1)) * 100) || 0}%`;
-                const metricCells = tr.querySelectorAll(".metric-cell");
+                const metricCells = tr.querySelectorAll(".column-cells-metric");
                 if (metricCells[0]) {
                     metricCells[0].textContent = `${setTotal}`;
                 }
