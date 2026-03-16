@@ -38,19 +38,19 @@ TECHDEBT: Handle the terrorist -1 hand size event
             max-width: 1600px;
             height: 100vh;
             margin: 0 auto;
-            padding: 5px;
+            padding: 4px;
         }
 
         .hero {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .card {
             background: rgba(27, 31, 36, .92);
             border: 1px solid rgba(255, 255, 255, .08);
-            border-radius: 18px;
-            padding: 14px;
+            border-radius: 8px;
+            padding: 4px;
             box-shadow: 0 16px 36px rgba(0, 0, 0, .28);
             backdrop-filter: blur(10px);
             position: relative;
@@ -64,7 +64,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
             border: 1px solid rgba(255, 255, 255, .14);
             color: #fff;
             border-radius: 10px;
-            padding: 6px 10px;
+            padding: 4px 10px;
             font-size: .8rem;
             text-decoration: none;
             font-weight: 700;
@@ -75,7 +75,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
         }
 
         h1 {
-            margin: 0 0 8px 0;
+            margin: 0;
             font-size: 1.9rem;
             letter-spacing: .03em;
         }
@@ -89,7 +89,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .toolbar {
             display: grid;
             grid-template-columns: 1.3fr 0.5fr 3.2fr;
-            gap: 12px;
+            gap: 16px;
             align-items: end;
         }
 
@@ -98,22 +98,21 @@ TECHDEBT: Handle the terrorist -1 hand size event
             min-width: 200px;
         }
 
-
         .small-field select {
             min-width: 200px;
-            padding: 8px 10px;
+            padding: 4px 10px;
             font-size: .9rem;
         }
 
         .search-field input {
-            padding: 10px 12px;
+            padding: 4px 10px;
         }
 
         .field label {
             display: block;
             font-size: .8rem;
             color: var(--muted);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: .06em;
         }
@@ -127,15 +126,8 @@ TECHDEBT: Handle the terrorist -1 hand size event
             border: 1px solid rgba(255, 255, 255, .1);
             background: #0f1318;
             color: var(--text);
-            padding: 10px 12px;
+            padding: 4px 10px;
             font: inherit;
-        }
-
-        .button-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 14px;
         }
 
         button {
@@ -158,18 +150,17 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 8px;
+            gap: 4px;
+            margin-top: 4px;
             max-height: 340px;
             overflow: auto;
-            padding-right: 2px;
         }
 
         .summary-actions {
             display: flex;
-            gap: 8px;
+            gap: 16px;
             flex-wrap: wrap;
-            margin-top: 8px;
+            margin-top: 4px;
             align-items: center;
         }
 
@@ -257,7 +248,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .summary-actions .pill.expansion-pill-exp2,
         .summary-actions .pill.expansion-pill-exp3 {
             min-width: 64px;
-            padding: 8px 8px;
+            padding: 8px 10px;
         }
 
         .pill {
@@ -266,7 +257,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
             padding: 8px 10px;
             display: flex;
             justify-content: space-between;
-            gap: 8px;
+            gap: 4px;
             align-items: center;
             font-size: .9rem;
             cursor: pointer;
@@ -288,21 +279,6 @@ TECHDEBT: Handle the terrorist -1 hand size event
             opacity: .25;
         }
 
-        .pill-row {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-
-        .pill-row .pill {
-            justify-content: center;
-            color: #fff;
-            font-weight: 700;
-            min-width: 64px;
-            padding: 7px 9px;
-        }
-
         .expansion-pill-base {
             background: #272727;
             border-color: rgba(255, 255, 255, .14);
@@ -321,11 +297,6 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .expansion-pill-exp3 {
             background: #6f2fb4;
             border-color: rgba(255, 255, 255, .14);
-        }
-
-        .pill-row .pill.inactive {
-            opacity: .65;
-            filter: saturate(.75);
         }
 
         .pill,
@@ -516,7 +487,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
 
         .legend {
             display: flex;
-            gap: 8px;
+            gap: 4px;
             flex-wrap: nowrap;
             align-items: center;
             margin-top: 0;
@@ -533,10 +504,10 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .legend span {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
             font-size: .86rem;
             background: rgba(255, 255, 255, .05);
-            padding: 7px 10px;
+            padding: 8px 10px;
             border-radius: 999px;
             border: 1px solid rgba(255, 255, 255, .12);
             cursor: pointer;
@@ -558,12 +529,6 @@ TECHDEBT: Handle the terrorist -1 hand size event
             height: 12px;
             border-radius: 50%;
             display: inline-block;
-        }
-
-        .footer-note {
-            margin-top: 12px;
-            color: var(--muted);
-            font-size: .9rem;
         }
 
         @media (max-width: 1100px) {
@@ -602,7 +567,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
             position: absolute;
             background: #1e1e1e;
             color: #fff;
-            padding: 12px 14px;
+            padding: 14px 14px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, .15);
             font-size: 14px;
@@ -1352,7 +1317,7 @@ Exp1:
                     const buttonRect = btn.getBoundingClientRect();
                     const hostRect = popupHost.getBoundingClientRect();
                     const popupRect = popup.getBoundingClientRect();
-                    const padding = 12;
+                    const padding = 14;
                     const desiredLeft = buttonRect.left - hostRect.left;
                     const maxLeft = hostRect.width - popupRect.width - padding;
                     const clampedLeft = Math.max(padding, Math.min(desiredLeft, maxLeft));
