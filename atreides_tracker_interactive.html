@@ -1,0 +1,1390 @@
+<!-- 
+TECHDEBT: Better logic around Unknown cards
+TECHDEBT: Better logic around boxes never being more than total hand max
+TECHDEBT: Handle the terrorist -1 hand size event
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atreides Tracker - Interactive</title>
+    <style>
+        :root {
+            --bg: #111315;
+            --panel: #1b1f24;
+            --panel-2: #222831;
+            --grid: #555;
+            --text: #f3f4f6;
+            --muted: #b5bcc8;
+            --sticky: #d8d8d8;
+            --cell: #efefef;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding-bottom: 75px;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(180deg, #0d0f12, #161a20 40%, #0f1217);
+            color: var(--text);
+        }
+
+        .app {
+            margin: 0 auto;
+            padding: 5px;
+        }
+
+        .hero {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .card {
+            background: rgba(27, 31, 36, .92);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, .28);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 1.9rem;
+            letter-spacing: .03em;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .field label {
+            display: block;
+            font-size: .8rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .field input,
+        .field select,
+        .field button,
+        .field textarea {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            background: #0f1318;
+            color: var(--text);
+            padding: 10px 12px;
+            font: inherit;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        button {
+            cursor: pointer;
+            transition: transform .12s ease, opacity .12s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button.secondary {
+            background: #171b21;
+        }
+
+        button.warn {
+            background: #442525;
+        }
+
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+            max-height: 340px;
+            overflow: auto;
+            padding-right: 2px;
+        }
+
+        .summary-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .summary-actions .pill {
+            justify-content: center;
+            min-width: 104px;
+            font-weight: 700;
+            padding: 8px 10px;
+        }
+
+        .summary-actions .pill.reset-pill {
+            background: #111;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.deck-pill {
+            background: #5a3416;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.discard-pill {
+            background: #a87442;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.expansion-pill-base {
+            background: #272727;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.expansion-pill-e1 {
+            background: #8f6d39;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.expansion-pill-e2 {
+            background: #ac1b6b;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .summary-actions .pill.expansion-pill-e3 {
+            background: #6f2fb4;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .pill {
+            background: rgba(255, 255, 255, .05);
+            border-radius: 10px;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            font-size: .9rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            transition: transform .12s ease, border-color .12s ease, background .12s ease, opacity .12s ease;
+        }
+
+        .pill:hover {
+            transform: translateY(-1px);
+        }
+
+        .pill.active {
+            background: rgba(255, 255, 255, .11);
+            border-color: rgba(255, 255, 255, .2);
+        }
+
+        .pill.inactive {
+            opacity: .25;
+        }
+
+        .pill-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .pill-row .pill {
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            min-width: 64px;
+            padding: 7px 9px;
+        }
+
+        .expansion-pill-base {
+            background: #272727;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .expansion-pill-e1 {
+            background: #8f6d39;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .expansion-pill-e2 {
+            background: #ac1b6b;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .expansion-pill-e3 {
+            background: #6f2fb4;
+            border-color: rgba(255, 255, 255, .14);
+        }
+
+        .pill-row .pill.inactive {
+            opacity: .65;
+            filter: saturate(.75);
+        }
+
+        .pill,
+        .pill strong,
+        .pill span,
+        .pill label,
+        .pill small {
+            color: #fff;
+        }
+
+        .table-wrap {
+            background: rgba(27, 31, 36, .94);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 18px;
+            padding: 14px;
+            overflow: auto;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, .28);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 900px;
+            background: #3a3a3a;
+            color: #111;
+        }
+
+        th,
+        td {
+            border: 1px solid #acacac;
+            padding: 4px 4px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background: var(--sticky);
+        }
+
+        .sticky-col-base,
+        .sticky-col-e1,
+        .sticky-col-e2,
+        .sticky-col-e3,
+        .sticky-left-5,
+        .sticky-left-6,
+        .sticky-left-7,
+        .sticky-left-8 {
+            position: sticky;
+            z-index: 2;
+        }
+
+        .sticky-col-name {
+            position: sticky;
+            z-index: 2;
+            text-align: left;
+        }
+
+        .sticky-col-type {
+            position: sticky;
+            z-index: 2;
+            text-align: left;
+        }
+
+        .sticky-left-7 {
+            min-width: 64px;
+            width: 64px;
+        }
+
+        thead .sticky-col-base,
+        thead .sticky-col-e1,
+        thead .sticky-col-e2,
+        thead .sticky-col-e3,
+        thead .sticky-left-5,
+        thead .sticky-left-6,
+        thead .sticky-left-7,
+        thead .sticky-left-8,
+        thead .sticky-col-name,
+        thead .sticky-col-type {
+            z-index: 4;
+        }
+
+        .setcol {
+            width: 34px;
+            color: #fafafa;
+            font-weight: 00;
+        }
+
+        .name-cell,
+        .type-cell,
+        .metric-cell {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .name-cell small {
+            display: block;
+            font-weight: 500;
+            opacity: .9;
+        }
+
+        .type-cell {
+            white-space: nowrap;
+        }
+
+        .faction-head {
+            min-width: 90px;
+            color: #fff;
+            font-size: .85rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .check-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: nowrap;
+            min-height: 20px;
+        }
+
+        .check-group input {
+            width: 20px;
+            height: 20px;
+            accent-color: #222;
+            cursor: pointer;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        @media (pointer: coarse) {
+            .check-group {
+                gap: 12px;
+                min-height: 32px;
+            }
+
+            .check-group input {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+
+        .tiny {
+            font-size: .78rem;
+            color: var(--muted);
+        }
+
+        .legend {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .86rem;
+            background: rgba(255, 255, 255, .05);
+            padding: 7px 10px;
+            border-radius: 999px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .footer-note {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        @media (max-width: 1100px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                grid-template-columns: repeat(2, minmax(140px, 1fr));
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-btn {
+            margin-right: 6px;
+            margin-left: 0;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: rgba(0, 0, 0, .35);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+
+        .info-popup {
+            position: fixed;
+            background: #1e1e1e;
+            color: #fff;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            font-size: 14px;
+            line-height: 1.45;
+            z-index: 1000;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
+            width: min(360px, calc(100vw - 24px));
+            white-space: normal;
+        }
+
+        .info-popup p {
+            margin: 0 0 10px 0;
+        }
+
+        .info-popup p:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <section class="hero">
+            <div class="card">
+                <h1>Atreides Tracker</h1>
+                <p class="subtitle">Interactive HTML version of the tracker sheet. Check off discoveries by faction,
+                    filter the table, and keep progress saved automatically in your browser.</p>
+                <div class="toolbar">
+                    <div class="field">
+                        <label for="searchBox">Search cards</label>
+                        <input id="searchBox" type="text" placeholder="Karama, poison, harkonnen..." />
+                    </div>
+                    <div class="field">
+                        <label for="categoryFilter">Category</label>
+                        <select id="categoryFilter"></select>
+                    </div>
+                    <div class="field">
+                        <label for="typeFilter">Type</label>
+                        <select id="typeFilter"></select>
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button id="clearFiltersBtn" class="secondary">Clear filters</button>
+                    <button id="resetChecksBtn" class="warn">Reset all checks</button>
+                    <button id="exportBtn" class="secondary">Export progress</button>
+                    <button id="importBtn" class="secondary">Import progress</button>
+                    <p class="footer-note">Progress autosaves locally. Export/import uses a JSON file so you can move the
+                        tracker between devices.</p>
+                </div>
+                <div class="legend" id="legend"></div>
+                <div class="tiny" style="margin-top:8px;">Expansions</div>
+                <div class="summary-actions" id="expansionActions"></div>
+                <div style="margin-top:8px;" class="tiny">Factions</div>
+                <div class="summary-actions" id="summaryActions"></div>
+                <div class="summary-grid" id="factionSummary"></div>
+            </div>
+        </section>
+
+        <section class="table-wrap">
+            <table id="trackerTable">
+                <thead id="trackerHead"></thead>
+                <tbody id="trackerBody"></tbody>
+            </table>
+        </section>
+        <input id="importFileInput" type="file" accept="application/json" style="display:none" />
+    </div>
+
+    <script>
+        const STORAGE_KEY = "atreides-tracker-interactive-v1";
+
+        const factions = [
+            { key: "emperor", label: "Emperor", color: "#b52f23" },
+            { key: "spacingGuild", label: "Spacing Guild", color: "#d05f1d" },
+            { key: "fremen", label: "Fremen", color: "#d89d1f" },
+            { key: "atreides", label: "Atreides", color: "#7f8f2a" },
+            { key: "beneGesserit", label: "Bene Gesserit", color: "#1f3f86" },
+            { key: "harkonnen", label: "Harkonnen", color: "#151515" },
+            { key: "ixian", label: "Ixian", color: "#b9b27a" },
+            { key: "tleilaxu", label: "Tleilaxu", color: "#5f426f" },
+            { key: "choam", label: "Choam", color: "#7f1111" },
+            { key: "richese", label: "Richese", color: "#ddd8cb" },
+            { key: "ecaz", label: "Ecaz", color: "#9b58d0" },
+            { key: "moritani", label: "Moritani", color: "#4e97a4" }
+        ];
+
+        const rows = [
+            {
+                id: "weapon-projectile", category: "Weapons", name: "Various",
+                info: `
+                    Base:
+
+                    - Crysknife
+
+                    - Maula Pistol
+
+                    - Slip Tip
+
+                    - Stunner
+
+                    E1: Hunter Seeker`,
+                type: "Weapon Projectile", setCounts: [4, 1, 0, 0], color: "#9a3f11"
+            },
+            {
+                id: "weapon-poison", category: "Weapons", name: "Various",
+                info: `
+                    Base:
+
+                    - Chaumas
+
+                    - Chaumurky
+
+                    - Ella Drug
+
+                    - Gom Jabbar
+
+                    E1: Basillia Weapon`,
+                type: "Weapon Poison", setCounts: [4, 1, 0, 0], color: "#9a3f11"
+            },
+            { id: "artillery-strike", category: "Weapons", name: "Artillery Strike", info: `Artillery Strike`, type: "Weapon Special", setCounts: [0, 1, 1, 0], color: "#9a3f11" },
+            { id: "lasgun", category: "Weapons", name: "Lasgun", info: `Lasgun`, type: "Weapon Special", setCounts: [1, 0, 0, 0], color: "#9a3f11" },
+            { id: "mirror-weapon", category: "Weapons", name: "Mirror Weapon", info: `Mirror Weapon`, type: "Weapon Special", setCounts: [0, 0, 1, 0], color: "#9a3f11" },
+            { id: "poison-tooth", category: "Weapons", name: "Poison Tooth", info: `Poison Tooth`, type: "Weapon Poison Special", setCounts: [0, 1, 1, 0], color: "#9a3f11" },
+            { id: "stone-burner", category: "Weapons", name: "Stone Burner", info: `Stone Burner`, type: "Weapon Special", setCounts: [0, 0, 1, 0], color: "#9a3f11" },
+            { id: "poison-blade", category: "Weapons", name: "Poison Blade", info: `Poison Blade`, type: "Weapon Special", setCounts: [0, 1, 0, 0], color: "#9a3f11" },
+            { id: "weirding-way", category: "Weapons", name: "Weirding Way", info: `Weirding Way`, type: "Weapon Defense Special", setCounts: [0, 1, 0, 0], color: "#9a3f11" },
+
+            { id: "chemistry", category: "Defenses", name: "Chemistry", info: `Chemistry`, type: "Defense Weapon Special", setCounts: [0, 1, 0, 0], color: "#243965" },
+            { id: "portable-snooper", category: "Defenses", name: "Portable Snooper", info: `Portable Snooper`, type: "Defense Poison", setCounts: [0, 0, 1, 0], color: "#243965" },
+            { id: "shield-snooper", category: "Defenses", name: "Shield Snooper", info: `Shield Snooper`, type: "Defense Special", setCounts: [0, 1, 0, 0], color: "#243965" },
+            { id: "shield", category: "Defenses", name: "Shield", info: `Shield`, type: "Defense Projectile", setCounts: [4, 1, 0, 0], color: "#243965" },
+            { id: "snooper", category: "Defenses", name: "Snooper", info: `Snooper`, type: "Defense Poison", setCounts: [4, 1, 0, 0], color: "#243965" },
+
+            { id: "amal", category: "Specials", name: "Amal", info: `Amal`, type: "Special", setCounts: [0, 1, 0, 0], color: "#4b5d22" },
+            { id: "cheap-heroine", category: "Specials", name: "Cheap Hero(ine)", info: `Cheap Hero(ine)`, type: "Special Leader", setCounts: [3, 0, 0, 0], color: "#4b5d22" },
+            { id: "distrans", category: "Specials", name: "Distrans", info: `Distrans`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
+            { id: "family-atomics", category: "Specials", name: "Family Atomics", info: `Family Atomics`, type: "Special Storm", setCounts: [1, 0, 0, 0], color: "#4b5d22" },
+            { id: "hajr", category: "Specials", name: "Hajr", info: `Hajr`, type: "Special Movement", setCounts: [1, 0, 0, 0], color: "#4b5d22" },
+            { id: "harass-withdraw", category: "Specials", name: "Harass & Withdraw", info: `Harass & Withdraw`, type: "Special", setCounts: [0, 0, 0, 1], color: "#4b5d22" },
+            { id: "harvester", category: "Specials", name: "Harvester", info: `Harvester`, type: "Special Spice Blow", setCounts: [0, 1, 0, 0], color: "#4b5d22" },
+            { id: "juice-of-sappho", category: "Specials", name: "Juice of Sapho", info: `Juice of Sapho`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
+            { id: "karama", category: "Specials", name: "Karama", info: `Karama`, type: "Special", setCounts: [2, 0, 3, 0], color: "#4b5d22" },
+            { id: "nullentropy-box", category: "Specials", name: "Nullentropy Box", info: `Nullentropy Box`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
+            { id: "ornithopter", category: "Specials", name: "Ornithopter", info: `Ornithopter`, type: "Special Movement", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
+            { id: "residual-poison", category: "Specials", name: "Residual Poison", info: `Residual Poison`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
+            { id: "recruits", category: "Specials", name: "Recruits", info: `Recruits`, type: "Special", setCounts: [0, 0, 0, 1], color: "#4b5d22" },
+            { id: "reinforcements", category: "Specials", name: "Reinforcements", info: `Reinforcements`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
+            { id: "semuta-drug", category: "Specials", name: "Semuta Drug", info: `Semuta Drug`, type: "Special", setCounts: [0, 0, 1, 0], color: "#4b5d22" },
+            { id: "thumper", category: "Specials", name: "Thumper", info: `Thumper`, type: "Special Spice Blow", setCounts: [0, 1, 0, 0], color: "#4b5d22" },
+            { id: "tleilaxu-ghola", category: "Specials", name: "Tleilaxu Ghola", info: `Tleilaxu Ghola`, type: "Special", setCounts: [1, 0, 0, 0], color: "#4b5d22" },
+            { id: "truthtrance", category: "Specials", name: "Truthtrance", info: `Truthtrance`, type: "Special", setCounts: [2, 0, 0, 0], color: "#4b5d22" },
+            { id: "weather-control", category: "Specials", name: "Weather Control", info: `Weather Control`, type: "Special Storm", setCounts: [1, 0, 0, 0], color: "#4b5d22" },
+
+            {
+                id: "worthless-card", category: "Worthless", name: "Various",
+                info: `
+                - Baliset
+
+                - Jubba Cloak
+
+                - Kull Wahad (2 in E1)
+
+                - Kulon
+
+                - La, La, La
+                
+                - Trip to Gamont`, type: "Worthless Card", setCounts: [5, 1, 0, 0], color: "#938559"
+            },
+            { id: "unknown", category: "Unknown", name: "Unknown", info: `Unknown`, type: "Unknown", setCounts: [" ", " ", " ", " "], color: "#6b6b6b" }
+        ];
+
+        const expansions = [
+            { key: "base", label: "Base", index: 0, className: "expansion-pill-base" },
+            { key: "e1", label: "E1", index: 1, className: "expansion-pill-e1" },
+            { key: "e2", label: "E2", index: 2, className: "expansion-pill-e2" },
+            { key: "e3", label: "E3", index: 3, className: "expansion-pill-e3" }
+        ];
+        const summaryColumns = [
+            { key: "deck", label: "Deck", color: "#5a3416" },
+            { key: "discard", label: "Discard", color: "#a87442" }
+        ];
+
+        const factionHandLimits = {
+            emperor: 4,
+            spacingGuild: 4,
+            fremen: 4,
+            atreides: 4,
+            beneGesserit: 4,
+            harkonnen: 8,
+            ixian: 4,
+            tleilaxu: 4,
+            choam: 5,
+            richese: 4,
+            ecaz: 4,
+            moritani: 4
+        };
+        const factionRenderMaxBoxes = 5;
+
+        const state = loadState();
+
+        const searchBox = document.getElementById("searchBox");
+        const categoryFilter = document.getElementById("categoryFilter");
+        const typeFilter = document.getElementById("typeFilter");
+        const expansionActions = document.getElementById("expansionActions");
+        const trackerHead = document.getElementById("trackerHead");
+        const trackerBody = document.getElementById("trackerBody");
+        const factionSummary = document.getElementById("factionSummary");
+        const summaryActions = document.getElementById("summaryActions");
+        const legend = document.getElementById("legend");
+        const importFileInput = document.getElementById("importFileInput");
+
+        function loadState() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+                return {
+                    checks: parsed.checks || {},
+                    filters: parsed.filters || {},
+                    selectedFactions: Array.isArray(parsed.selectedFactions) && parsed.selectedFactions.length
+                        ? parsed.selectedFactions
+                        : factions.map((faction) => faction.key),
+                    selectedExpansions: Array.isArray(parsed.selectedExpansions) && parsed.selectedExpansions.length
+                        ? parsed.selectedExpansions
+                        : expansions.map((expansion) => expansion.key),
+                    selectedSummaryColumns: Array.isArray(parsed.selectedSummaryColumns) && parsed.selectedSummaryColumns.length
+                        ? parsed.selectedSummaryColumns
+                        : summaryColumns.map((column) => column.key),
+                    showExpansionColumns: parsed.showExpansionColumns !== false
+                };
+            } catch (error) {
+                return {
+                    checks: {},
+                    filters: {},
+                    selectedFactions: factions.map((faction) => faction.key),
+                    selectedExpansions: expansions.map((expansion) => expansion.key),
+                    selectedSummaryColumns: summaryColumns.map((column) => column.key),
+                    showExpansionColumns: true
+                };
+            }
+        }
+
+        function saveState() {
+            state.filters = {
+                search: searchBox.value,
+                category: categoryFilter.value,
+                type: typeFilter.value
+            };
+            state.selectedFactions = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+                ? state.selectedFactions
+                : factions.map((faction) => faction.key);
+            state.selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                ? state.selectedExpansions
+                : expansions.map((expansion) => expansion.key);
+            state.selectedSummaryColumns = Array.isArray(state.selectedSummaryColumns) && state.selectedSummaryColumns.length
+                ? state.selectedSummaryColumns
+                : summaryColumns.map((column) => column.key);
+            state.showExpansionColumns = state.showExpansionColumns !== false;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function populateControls() {
+            const categories = ["All", ...new Set(rows.map((row) => row.category))];
+            const types = ["All", ...new Set(rows.map((row) => row.type))];
+
+            categoryFilter.innerHTML = categories.map((value) => `<option>${value}</option>`).join("");
+            typeFilter.innerHTML = types.map((value) => `<option>${value}</option>`).join("");
+
+            searchBox.value = state.filters.search || "";
+            categoryFilter.value = state.filters.category || "All";
+            typeFilter.value = state.filters.type || "All";
+
+            state.selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                ? state.selectedExpansions
+                : expansions.map((expansion) => expansion.key);
+
+            if (expansionActions) {
+                const showExpansionColumns = state.showExpansionColumns !== false;
+                const toggleButton = `<button type="button" class="pill secondary ${showExpansionColumns ? "active" : "inactive"}" data-toggle-expansion-columns aria-pressed="${showExpansionColumns}" style="color:#fff;">Show/Hide</button>`;
+                const expansionButtons = expansions.map((expansion) => {
+                    const isActive = state.selectedExpansions.includes(expansion.key);
+                    return `<button type="button" class="pill ${expansion.className} ${isActive ? "active" : "inactive"}" data-expansion-toggle="${expansion.key}" aria-pressed="${isActive}" style="color:#fff;">${expansion.label}</button>`;
+                }).join("");
+
+                expansionActions.innerHTML = toggleButton + expansionButtons;
+
+                const toggleExpansionColumnsButton = expansionActions.querySelector("[data-toggle-expansion-columns]");
+                if (toggleExpansionColumnsButton) {
+                    toggleExpansionColumnsButton.addEventListener("click", toggleExpansionColumnsVisibility);
+                }
+
+                expansionActions.querySelectorAll("[data-expansion-toggle]").forEach((button) => {
+                    button.addEventListener("click", () => {
+                        toggleExpansion(button.dataset.expansionToggle);
+                    });
+                });
+            }
+
+            legend.innerHTML = [
+                ...new Map(rows.map((row) => [row.category, row.color])).entries()
+            ].map(([label, color]) => `<span><i class="dot" style="background:${color}"></i>${label}</span>`).join("");
+        }
+
+        function buildHeader() {
+            trackerHead.innerHTML = "";
+            const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                ? state.selectedExpansions
+                : expansions.map((expansion) => expansion.key);
+            const visibleExpansions = expansions.filter((expansion) => selectedExpansions.includes(expansion.key));
+
+            const selected = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+                ? state.selectedFactions
+                : factions.map((entry) => entry.key);
+            const visibleFactions = factions.filter((faction) => selected.includes(faction.key));
+
+            const selectedSummary = Array.isArray(state.selectedSummaryColumns) && state.selectedSummaryColumns.length
+                ? state.selectedSummaryColumns
+                : summaryColumns.map((column) => column.key);
+            const visibleSummaryColumns = summaryColumns.filter((column) => selectedSummary.includes(column.key));
+
+            const stickyClassByExpansionKey = {
+                base: "sticky-col-base",
+                e1: "sticky-col-e1",
+                e2: "sticky-col-e2",
+                e3: "sticky-col-e3"
+            };
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<th class="${stickyClassByExpansionKey[expansion.key]} setcol" style="background:#333; color:#fff;">${expansion.label}</th>`).join("")}
+        <th class="sticky-left-5" style="background:#333; color:#fff;">Ttl</th>
+        <th class="sticky-left-6" style="background:#333; color:#fff;">Knw</th>
+        <th class="sticky-left-7" style="background:#333; color:#fff;">%</th>
+        <th class="sticky-left-8" style="background:#333; color:#fff;">Act</th>
+        <th class="sticky-col-name" style="background:#333; color:#fff;">Name</th>
+        <th class="sticky-col-type" style="background:#333; color:#fff;">Type</th>
+        ${visibleSummaryColumns.map((column) => `<th class="faction-head" style="background:${column.color}; color:#fff;">${column.label}</th>`).join("")}
+        ${visibleFactions.map((faction) => `<th class="faction-head" style="background:${faction.color}; color:${faction.label === "Richese" ? "#111" : "#fff"};">${faction.label}</th>`).join("")}
+      `;
+            trackerHead.appendChild(row);
+        }
+
+        function currentFilters() {
+            return {
+                search: searchBox.value.trim().toLowerCase(),
+                category: categoryFilter.value,
+                type: typeFilter.value
+            };
+        }
+
+        function rowMatches(row, filters) {
+            const searchText = `${row.name} ${row.type} ${row.category}`.toLowerCase();
+            const searchOk = !filters.search || searchText.includes(filters.search);
+            const categoryOk = filters.category === "All" || row.category === filters.category;
+            const typeOk = filters.type === "All" || row.type === filters.type;
+            const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                ? state.selectedExpansions
+                : expansions.map((expansion) => expansion.key);
+            const expansionOk = expansions.some((expansion) => {
+                const value = row.setCounts[expansion.index];
+                return selectedExpansions.includes(expansion.key)
+                    && value !== 0
+                    && value !== "0"
+                    && value !== null
+                    && value !== undefined
+                    && value !== "";
+            });
+            return searchOk && categoryOk && typeOk && expansionOk;
+        }
+
+        function cellKey(rowId, factionKey, index) {
+            return `${rowId}__${factionKey}__${index}`;
+        }
+
+        function getRowBoxCount(row) {
+            const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                ? state.selectedExpansions
+                : expansions.map((expansion) => expansion.key);
+
+            return expansions.reduce((sum, expansion) => {
+                if (!selectedExpansions.includes(expansion.key)) {
+                    return sum;
+                }
+
+                const numericValue = Number(row.setCounts[expansion.index]);
+                return Number.isFinite(numericValue) ? sum + numericValue : sum;
+            }, 0);
+        }
+
+        function getRowBoxCountForFaction(row, factionKey) {
+            const maxHandSize = factionHandLimits[factionKey] || 4;
+            const renderMax = Math.min(maxHandSize, factionRenderMaxBoxes);
+
+            if (row.id === "unknown") {
+                if (factionKey === "deck" || factionKey === "discard") {
+                    return 0;
+                }
+                return renderMax;
+            }
+
+            if (factionKey === "deck" || factionKey === "discard") {
+                return getRowBoxCount(row);
+            }
+
+            return Math.min(getRowBoxCount(row), renderMax);
+        }
+
+        function getFactionCheckedCount(factionKey) {
+            return rows.reduce((sum, row) => {
+                const boxCount = getRowBoxCountForFaction(row, factionKey);
+                let rowCount = 0;
+                for (let index = 0; index < boxCount; index += 1) {
+                    rowCount += state.checks[cellKey(row.id, factionKey, index)] ? 1 : 0;
+                }
+                return sum + rowCount;
+            }, 0);
+        }
+
+        function buildChecks(row, factionKey) {
+            if (row.id === "unknown" && (factionKey === "deck" || factionKey === "discard")) {
+                return `<div class="check-group"></div>`;
+            }
+
+            const checks = [];
+            const boxCount = getRowBoxCountForFaction(row, factionKey);
+            for (let index = 0; index < boxCount; index += 1) {
+                const key = cellKey(row.id, factionKey, index);
+                const checked = Boolean(state.checks[key]);
+                checks.push(`<input type="checkbox" data-key="${key}" ${checked ? "checked" : ""} />`);
+            }
+            return `<div class="check-group">${checks.join("")}</div>`;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function buildInfoPopupContent(row) {
+            const infoText = (row.info || row.name || "").trim();
+            const paragraphs = infoText
+                .split(/\n\s*\n/)
+                .map((paragraph) => paragraph.trim())
+                .filter(Boolean);
+
+            if (!paragraphs.length) {
+                return `<p>${escapeHtml(row.name || "")}</p>`;
+            }
+
+            return paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("");
+        }
+
+        function renderTable() {
+            const filters = currentFilters();
+            const visibleRows = rows.filter((row) => rowMatches(row, filters));
+
+            const selected = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+                ? state.selectedFactions
+                : factions.map((entry) => entry.key);
+            const visibleFactions = factions.filter((faction) => selected.includes(faction.key));
+            const selectedSummary = Array.isArray(state.selectedSummaryColumns) && state.selectedSummaryColumns.length
+                ? state.selectedSummaryColumns
+                : summaryColumns.map((column) => column.key);
+            const visibleSummaryColumns = summaryColumns.filter((column) => selectedSummary.includes(column.key));
+            const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                ? state.selectedExpansions
+                : expansions.map((expansion) => expansion.key);
+            const visibleExpansions = expansions.filter((expansion) => selectedExpansions.includes(expansion.key));
+
+            const stickyClassByExpansionKey = {
+                base: "sticky-col-base",
+                e1: "sticky-col-e1",
+                e2: "sticky-col-e2",
+                e3: "sticky-col-e3"
+            };
+
+            const backgroundByExpansionKey = {
+                base: "#272727",
+                e1: "#8f6d39",
+                e2: "#ac1b6b",
+                e3: "#6f2fb4"
+            };
+
+            trackerBody.innerHTML = visibleRows.map((row) => {
+                const boxCount = getRowBoxCount(row);
+                const allVisibleKeys = [
+                    ...visibleSummaryColumns.map((column) => column.key),
+                    ...visibleFactions.map((faction) => faction.key)
+                ];
+                const knownKeys = [
+                    ...visibleFactions.map((faction) => faction.key),
+                    ...visibleSummaryColumns.filter((column) => column.key === "discard").map((column) => column.key)
+                ];
+                const activeKeys = visibleFactions.map((faction) => faction.key);
+                const rowChecked = allVisibleKeys.reduce((sum, key) => {
+                    let subtotal = 0;
+                    for (let index = 0; index < boxCount; index += 1) {
+                        subtotal += state.checks[cellKey(row.id, key, index)] ? 1 : 0;
+                    }
+                    return sum + subtotal;
+                }, 0);
+                const knownCount = knownKeys.reduce((sum, key) => {
+                    let subtotal = 0;
+                    for (let index = 0; index < boxCount; index += 1) {
+                        subtotal += state.checks[cellKey(row.id, key, index)] ? 1 : 0;
+                    }
+                    return sum + subtotal;
+                }, 0);
+                const activeCount = activeKeys.reduce((sum, key) => {
+                    let subtotal = 0;
+                    for (let index = 0; index < boxCount; index += 1) {
+                        subtotal += state.checks[cellKey(row.id, key, index)] ? 1 : 0;
+                    }
+                    return sum + subtotal;
+                }, 0);
+                const setTotal = visibleExpansions.reduce((sum, expansion) => {
+                    const numericValue = Number(row.setCounts[expansion.index]);
+                    return Number.isFinite(numericValue) ? sum + numericValue : sum;
+                }, 0);
+                const knownPct = `${Math.round((knownCount / Math.max(setTotal, 1)) * 100) || 0}%`;
+
+                return `
+          <tr data-rowid="${row.id}">
+                        ${(state.showExpansionColumns !== false ? visibleExpansions : []).map((expansion) => `<td class="${stickyClassByExpansionKey[expansion.key]} setcol" style="background:${backgroundByExpansionKey[expansion.key]};">${row.setCounts[expansion.index] || ""}</td>`).join("")}
+            <td class="sticky-left-5 metric-cell">${setTotal}</td>
+            <td class="sticky-left-6 metric-cell">${knownCount}</td>
+            <td class="sticky-left-7 metric-cell">${knownPct}</td>
+            <td class="sticky-left-8 metric-cell">${activeCount}</td>
+            <td class="sticky-col-name name-cell" style="background:${row.color};">
+    <button class="info-btn" data-rowid="${row.id}" aria-label="Show info for ${row.name}">i</button>
+    ${row.name}
+</td>
+            <td class="sticky-col-type type-cell" style="background:${row.color};">${row.type}</td>
+            ${visibleSummaryColumns.map((column) => `<td style="background:${column.key === "deck" ? "rgba(90, 52, 22, 0.5)" : "rgba(168, 116, 66, 0.5)"};">${buildChecks(row, column.key)}</td>`).join("")}
+                        ${visibleFactions.map((faction) => {
+                    const hex = faction.color.replace("#", "");
+                    const red = parseInt(hex.substring(0, 2), 16);
+                    const green = parseInt(hex.substring(2, 4), 16);
+                    const blue = parseInt(hex.substring(4, 6), 16);
+                    return `<td style="background:rgba(${red}, ${green}, ${blue}, 0.5);">${buildChecks(row, faction.key)}</td>`;
+                }).join("")}
+          </tr>
+        `;
+            }).join("");
+
+            bindCheckboxes();
+            renderSummary();
+            saveState();
+        }
+
+        function bindCheckboxes() {
+            trackerBody.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+                checkbox.addEventListener("change", (event) => {
+                    state.checks[event.target.dataset.key] = event.target.checked;
+                    saveState();
+                    renderSummary();
+                    updateRowTotals();
+                });
+            });
+            trackerBody.querySelectorAll(".info-btn").forEach((btn) => {
+                btn.addEventListener("click", (event) => {
+                    event.stopPropagation();
+
+                    const existing = document.querySelector(".info-popup");
+                    if (existing) {
+                        existing.remove();
+                    }
+
+                    const row = rows.find((entry) => entry.id === btn.dataset.rowid);
+                    if (!row) {
+                        return;
+                    }
+
+                    const popup = document.createElement("div");
+                    popup.className = "info-popup";
+                    popup.innerHTML = buildInfoPopupContent(row);
+
+                    document.body.appendChild(popup);
+
+                    const rect = btn.getBoundingClientRect();
+                    const popupRect = popup.getBoundingClientRect();
+                    const maxLeft = window.innerWidth - popupRect.width - 12;
+                    const desiredLeft = Math.max(12, Math.min(rect.left, maxLeft));
+                    const desiredTop = rect.bottom + 6;
+
+                    popup.style.left = desiredLeft + "px";
+                    popup.style.top = desiredTop + "px";
+
+                    setTimeout(() => {
+                        document.addEventListener("click", function closePopup(e) {
+                            if (!popup.contains(e.target) && e.target !== btn) {
+                                popup.remove();
+                                document.removeEventListener("click", closePopup);
+                            }
+                        });
+                    }, 10);
+                });
+            });
+        }
+
+        function updateRowTotals() {
+            document.querySelectorAll("tbody tr").forEach((tr) => {
+                const rowId = tr.dataset.rowid;
+                const row = rows.find((entry) => entry.id === rowId);
+                const boxCount = getRowBoxCount(row);
+                const selectedFactionKeys = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+                    ? state.selectedFactions
+                    : factions.map((faction) => faction.key);
+                const selectedSummaryKeys = Array.isArray(state.selectedSummaryColumns) && state.selectedSummaryColumns.length
+                    ? state.selectedSummaryColumns
+                    : summaryColumns.map((column) => column.key);
+                const totalKeys = [...selectedSummaryKeys, ...selectedFactionKeys];
+                const knownKeys = [
+                    ...selectedFactionKeys,
+                    ...selectedSummaryKeys.filter((key) => key === "discard")
+                ];
+                const total = totalKeys.reduce((sum, key) => {
+                    for (let index = 0; index < boxCount; index += 1) {
+                        sum += state.checks[cellKey(row.id, key, index)] ? 1 : 0;
+                    }
+                    return sum;
+                }, 0);
+                const knownCount = knownKeys.reduce((sum, key) => {
+                    for (let index = 0; index < boxCount; index += 1) {
+                        sum += state.checks[cellKey(row.id, key, index)] ? 1 : 0;
+                    }
+                    return sum;
+                }, 0);
+                const activeCount = selectedFactionKeys.reduce((sum, key) => {
+                    for (let index = 0; index < boxCount; index += 1) {
+                        sum += state.checks[cellKey(row.id, key, index)] ? 1 : 0;
+                    }
+                    return sum;
+                }, 0);
+                const selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                    ? state.selectedExpansions
+                    : expansions.map((expansion) => expansion.key);
+                const visibleExpansions = expansions.filter((expansion) => selectedExpansions.includes(expansion.key));
+                const setTotal = visibleExpansions.reduce((sum, expansion) => {
+                    const numericValue = Number(row.setCounts[expansion.index]);
+                    return Number.isFinite(numericValue) ? sum + numericValue : sum;
+                }, 0);
+                const knownPct = `${Math.round((knownCount / Math.max(setTotal, 1)) * 100) || 0}%`;
+                const metricCells = tr.querySelectorAll(".metric-cell");
+                if (metricCells[0]) {
+                    metricCells[0].textContent = `${setTotal}`;
+                }
+                if (metricCells[1]) {
+                    metricCells[1].textContent = `${knownCount}`;
+                }
+                if (metricCells[2]) {
+                    metricCells[2].textContent = knownPct;
+                }
+                if (metricCells[3]) {
+                    metricCells[3].textContent = `${activeCount}`;
+                }
+            });
+        }
+        function toggleExpansion(expansionKey) {
+            const current = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+                ? [...state.selectedExpansions]
+                : expansions.map((expansion) => expansion.key);
+            const exists = current.includes(expansionKey);
+
+            if (exists) {
+                if (current.length === 1) {
+                    return;
+                }
+                state.selectedExpansions = current.filter((key) => key !== expansionKey);
+            } else {
+                state.selectedExpansions = [...current, expansionKey];
+            }
+
+            saveState();
+            populateControls();
+            buildHeader();
+            renderTable();
+        }
+
+        function toggleExpansionColumnsVisibility() {
+            state.showExpansionColumns = state.showExpansionColumns === false;
+            saveState();
+            populateControls();
+            buildHeader();
+            renderTable();
+        }
+        function renderSummary() {
+            const visibleFactionKeys = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+                ? state.selectedFactions
+                : factions.map((faction) => faction.key);
+            const activeFactionKeys = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+                ? state.selectedFactions
+                : factions.map((faction) => faction.key);
+            const activeSummaryKeys = Array.isArray(state.selectedSummaryColumns) && state.selectedSummaryColumns.length
+                ? state.selectedSummaryColumns
+                : summaryColumns.map((column) => column.key);
+            const totalAvailable = rows.reduce((sum, row) => sum + (getRowBoxCount(row) * (activeFactionKeys.length + activeSummaryKeys.length)), 0);
+            const allActiveKeys = [...activeSummaryKeys, ...activeFactionKeys];
+            const totalChecked = rows.reduce((sum, row) => {
+                let rowSum = 0;
+                allActiveKeys.forEach((key) => {
+                    const boxCount = getRowBoxCount(row);
+                    for (let index = 0; index < boxCount; index += 1) {
+                        rowSum += state.checks[cellKey(row.id, key, index)] ? 1 : 0;
+                    }
+                });
+                return sum + rowSum;
+            }, 0);
+
+
+            factionSummary.innerHTML = factions.map((faction) => {
+                let factionAvailable = 0;
+                let factionChecked = 0;
+
+                rows.forEach((row) => {
+                    const boxCount = getRowBoxCountForFaction(row, faction.key);
+                    factionAvailable += boxCount;
+                    for (let index = 0; index < boxCount; index += 1) {
+                        factionChecked += state.checks[cellKey(row.id, faction.key, index)] ? 1 : 0;
+                    }
+                });
+
+                const isActive = visibleFactionKeys.includes(faction.key);
+                const maxCount = factionHandLimits[faction.key] || 4;
+                const isFull = factionChecked >= maxCount;
+                const buttonBg = isFull ? "#8b1e1e" : "#1f6f3a";
+
+                return `<button type="button" class="pill ${isActive ? "active" : "inactive"}" data-faction-toggle="${faction.key}" aria-pressed="${isActive}" style="color:#fff; background:${buttonBg};"><span style="color:#fff;"><span class="dot" style="background:${faction.color}"></span> ${faction.label}</span><strong style="color:#fff;">${factionChecked} out of ${maxCount}</strong></button>`;
+            }).join("");
+
+            factionSummary.querySelectorAll("[data-faction-toggle]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    toggleFactionColumn(button.dataset.factionToggle);
+                });
+            });
+            if (summaryActions) {
+                const visibleSummaryKeys = Array.isArray(state.selectedSummaryColumns) && state.selectedSummaryColumns.length
+                    ? state.selectedSummaryColumns
+                    : summaryColumns.map((column) => column.key);
+
+                const resetButton = `<button type="button" class="pill reset-pill" data-summary-action="reset-deck">Reset</button>`;
+
+                const summaryButtons = summaryColumns.map((column) => {
+                    const isActive = visibleSummaryKeys.includes(column.key);
+                    const pillClass = column.key === "deck" ? "deck-pill" : "discard-pill";
+                    let columnAvailable = 0;
+                    let columnChecked = 0;
+
+                    rows.forEach((row) => {
+                        const boxCount = getRowBoxCountForFaction(row, column.key);
+                        columnAvailable += boxCount;
+                        for (let index = 0; index < boxCount; index += 1) {
+                            columnChecked += state.checks[cellKey(row.id, column.key, index)] ? 1 : 0;
+                        }
+                    });
+
+                    const pct = Math.round((columnChecked / Math.max(columnAvailable, 1)) * 100) || 0;
+                    return `<button type="button" class="pill ${pillClass} ${isActive ? "active" : "inactive"}" data-summary-toggle="${column.key}" aria-pressed="${isActive}"><span>${column.label}</span><strong>${columnChecked}/${columnAvailable} (${pct}%)</strong></button>`;
+                }).join("");
+
+                summaryActions.innerHTML = resetButton + summaryButtons;
+
+                const resetDeckButton = summaryActions.querySelector('[data-summary-action="reset-deck"]');
+                if (resetDeckButton) {
+                    resetDeckButton.addEventListener("click", resetToDeckState);
+                }
+
+                summaryActions.querySelectorAll("[data-summary-toggle]").forEach((button) => {
+                    button.addEventListener("click", () => {
+                        toggleSummaryColumn(button.dataset.summaryToggle);
+                    });
+                });
+            }
+        }
+
+        function toggleFactionColumn(factionKey) {
+            const current = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+                ? [...state.selectedFactions]
+                : factions.map((faction) => faction.key);
+            const exists = current.includes(factionKey);
+
+            if (exists) {
+                if (current.length === 1) {
+                    return;
+                }
+                state.selectedFactions = current.filter((key) => key !== factionKey);
+            } else {
+                state.selectedFactions = [...current, factionKey];
+            }
+
+            saveState();
+            buildHeader();
+            renderTable();
+        }
+
+        function toggleSummaryColumn(columnKey) {
+            const current = Array.isArray(state.selectedSummaryColumns) && state.selectedSummaryColumns.length
+                ? [...state.selectedSummaryColumns]
+                : summaryColumns.map((column) => column.key);
+            const exists = current.includes(columnKey);
+
+            if (exists) {
+                if (current.length === 1) {
+                    return;
+                }
+                state.selectedSummaryColumns = current.filter((key) => key !== columnKey);
+            } else {
+                state.selectedSummaryColumns = [...current, columnKey];
+            }
+
+            saveState();
+            buildHeader();
+            renderTable();
+        }
+
+        function resetToDeckState() {
+            const nextChecks = {};
+
+            rows.forEach((row) => {
+                if (row.id === "unknown") {
+                    return;
+                }
+
+                const deckBoxCount = getRowBoxCountForFaction(row, "deck");
+                for (let index = 0; index < deckBoxCount; index += 1) {
+                    nextChecks[cellKey(row.id, "deck", index)] = true;
+                }
+            });
+
+            factions.forEach((faction) => {
+                const unknownChecks = faction.key === "harkonnen" ? 2 : 1;
+                for (let index = 0; index < unknownChecks; index += 1) {
+                    nextChecks[cellKey("unknown", faction.key, index)] = true;
+                }
+            });
+
+            state.checks = nextChecks;
+            saveState();
+            buildHeader();
+            renderTable();
+        }
+
+        function resetAllChecks() {
+            const confirmed = window.confirm("Reset every checkbox in the tracker?");
+            if (!confirmed) {
+                return;
+            }
+            state.checks = {};
+            saveState();
+            renderTable();
+        }
+
+        function exportProgress() {
+            const payload = {
+                exportedAt: new Date().toISOString(),
+                checks: state.checks
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "atreides-tracker-progress.json";
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function importProgress(file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const parsed = JSON.parse(reader.result);
+                    state.checks = parsed.checks || {};
+                    saveState();
+                    renderTable();
+                } catch (error) {
+                    window.alert("That file could not be imported.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        searchBox.addEventListener("input", renderTable);
+        categoryFilter.addEventListener("change", renderTable);
+        typeFilter.addEventListener("change", renderTable);
+        document.getElementById("clearFiltersBtn").addEventListener("click", () => {
+            searchBox.value = "";
+            categoryFilter.value = "All";
+            typeFilter.value = "All";
+            state.selectedFactions = factions.map((faction) => faction.key);
+            state.selectedExpansions = expansions.map((expansion) => expansion.key);
+            state.selectedSummaryColumns = summaryColumns.map((column) => column.key);
+            state.showExpansionColumns = true;
+            populateControls();
+            buildHeader();
+            renderTable();
+        });
+        document.getElementById("resetChecksBtn").addEventListener("click", resetAllChecks);
+        document.getElementById("exportBtn").addEventListener("click", exportProgress);
+        document.getElementById("importBtn").addEventListener("click", () => importFileInput.click());
+        importFileInput.addEventListener("change", (event) => {
+            const [file] = event.target.files;
+            if (file) {
+                importProgress(file);
+            }
+            event.target.value = "";
+        });
+
+        populateControls();
+        state.selectedFactions = Array.isArray(state.selectedFactions) && state.selectedFactions.length
+            ? state.selectedFactions
+            : factions.map((faction) => faction.key);
+        state.selectedExpansions = Array.isArray(state.selectedExpansions) && state.selectedExpansions.length
+            ? state.selectedExpansions
+            : expansions.map((expansion) => expansion.key);
+        state.selectedSummaryColumns = Array.isArray(state.selectedSummaryColumns) && state.selectedSummaryColumns.length
+            ? state.selectedSummaryColumns
+            : summaryColumns.map((column) => column.key);
+        state.showExpansionColumns = state.showExpansionColumns !== false;
+        buildHeader();
+        renderTable();
+    </script>
+</body>
+
+</html>
+<!-- AIGEN: Generated by LLM (Model GPT-5 Thinking) END -->
