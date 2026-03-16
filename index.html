@@ -31,7 +31,6 @@ TECHDEBT: Handle the terrorist -1 hand size event
             background: linear-gradient(180deg, #0d0f12, #161a20 40%, #0f1217);
             color: var(--text);
             margin: 0;
-            padding-bottom: 150px;
         }
 
         .app {
@@ -54,6 +53,25 @@ TECHDEBT: Handle the terrorist -1 hand size event
             padding: 14px;
             box-shadow: 0 16px 36px rgba(0, 0, 0, .28);
             backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .other-option-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #171b21;
+            border: 1px solid rgba(255,255,255,.14);
+            color: #fff;
+            border-radius: 10px;
+            padding: 6px 10px;
+            font-size: .8rem;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .other-option-btn:hover {
+            transform: translateY(-1px);
         }
 
         h1 {
@@ -324,6 +342,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
             border: 1px solid rgba(255, 255, 255, .08);
             border-radius: 0;
             padding: 0;
+            padding-bottom: 50px;
             overflow: auto;
             box-shadow: 0 16px 36px rgba(0, 0, 0, .28);
             position: relative;
@@ -600,6 +619,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
     <div class="app">
         <section class="hero">
             <div class="card">
+                <a class="other-option-btn" href="https://treacherytracker.com/" target="_blank">Other Option</a>
                 <!--<h1>Atreides Tracker</h1>
                 <p class="subtitle">Interactive HTML version of the tracker sheet. Check off discoveries by faction,
                     filter the table, and keep progress saved automatically in your browser.</p>-->
