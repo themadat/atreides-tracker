@@ -1,6 +1,7 @@
 <!-- 
 1.0.0 - 2026.03.16 - Adam Lauer - Initial Release
-TECHDEBT: Add ability to drag and drop unknown cards onto the table to mark them as known
+TECHDEBT: Add ability to drag and drop unknown cards onto the table to mark them as known; 
+    unknown moving is wonky but not needed to really be corrected at this time since it is not relevant
 TECHDEBT: Handle the terrorist -1 hand size event
 TECHDEBT: Make it prettier in Big and BIGGER modes
 -->
@@ -277,7 +278,7 @@ TECHDEBT: Make it prettier in Big and BIGGER modes
         .pill[data-toggle-table-scale].big-active {
             font-weight: 700;
         }
-        
+
         .pill[data-toggle-table-scale].bigger-active {
             font-weight: 1000;
             font-size: 1.25rem;
@@ -623,6 +624,11 @@ TECHDEBT: Make it prettier in Big and BIGGER modes
 
         .move-armed {
             outline: 4px solid rgba(255, 255, 255, .5);
+            outline-offset: -2px;
+        }
+
+        th.header-drop-target {
+            outline: 4px dashed rgba(255, 255, 255, .35);
             outline-offset: -2px;
         }
 
@@ -1095,8 +1101,8 @@ Exp1:
         <th class="column-header-info" style="background:#333; color:#fff;">i</th>
         <th class="column-header-name" style="background:#333; color:#fff;">Name</th>
         <th class="column-header-type" style="background:#333; color:#fff;">Type</th>
-        ${visibleSummaryColumns.map((column) => `<th class="column-header-factions" style="background:${column.color}; color:#fff;">${column.label}</th>`).join("")}
-        ${visibleFactions.map((faction) => `<th class="column-header-factions" style="background:${faction.color}; color:${faction.label === "Richese" ? "#111" : "#fff"};">${faction.label}</th>`).join("")}
+        ${visibleSummaryColumns.map((column) => `<th class="column-header-factions" data-header-move-target="${column.key}" style="background:${column.color}; color:#fff;">${column.label}</th>`).join("")}
+        ${visibleFactions.map((faction) => `<th class="column-header-factions" data-header-move-target="${faction.key}" style="background:${faction.color}; color:${faction.label === "Richese" ? "#111" : "#fff"};">${faction.label}</th>`).join("")}
       `;
             trackerHead.appendChild(row);
         }
@@ -1927,6 +1933,26 @@ Exp1:
                     }
 
                     const moved = moveCardBetweenColumns(rowId, armedMove.sourceKey, sourceKey);
+                    if (!moved) {
+                        armedMove = null;
+                        renderTable();
+                    }
+                });
+            });
+
+            trackerHead.querySelectorAll("[data-header-move-target]").forEach((headerCell) => {
+                headerCell.classList.toggle("header-drop-target", Boolean(armedMove));
+                headerCell.addEventListener("click", () => {
+                    if (!armedMove) {
+                        return;
+                    }
+
+                    const moved = moveCardBetweenColumns(
+                        armedMove.rowId,
+                        armedMove.sourceKey,
+                        headerCell.dataset.headerMoveTarget
+                    );
+
                     if (!moved) {
                         armedMove = null;
                         renderTable();
