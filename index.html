@@ -1,5 +1,8 @@
 <!-- 
+1.0.0 - 2026.03.16 - Adam Lauer - Initial Release
+TECHDEBT: Add ability to drag and drop unknown cards onto the table to mark them as known
 TECHDEBT: Handle the terrorist -1 hand size event
+TECHDEBT: Make it prettier in Big and BIGGER modes
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -266,6 +269,30 @@ TECHDEBT: Handle the terrorist -1 hand size event
             transition: transform .12s ease, border-color .12s ease, background .12s ease, opacity .12s ease;
         }
 
+        .pill[data-toggle-table-scale] {
+            border: 2px solid rgba(255, 255, 255, 0.55);
+            font-weight: 400;
+        }
+
+        .pill[data-toggle-table-scale].big-active {
+            font-weight: 700;
+        }
+        
+        .pill[data-toggle-table-scale].bigger-active {
+            font-weight: 1000;
+            font-size: 1.25rem;
+        }
+
+        #trackerTable.table-scale-big~* .pill[data-toggle-table-scale],
+        .pill[data-toggle-table-scale]:focus {
+            border: 2px solid #ffffff;
+        }
+
+        /* Light outline when expansion columns are hidden */
+        .pill[data-toggle-expansion-columns].inactive {
+            border: 2px solid rgba(255, 255, 255, 0.35);
+        }
+
         .pill:hover {
             transform: translateY(-1px);
         }
@@ -394,7 +421,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
         }
 
         .column-header-factions {
-            min-width: 90px;
+            min-width: 140px;
             color: #fff;
             font-size: .75rem;
             text-transform: uppercase;
@@ -443,6 +470,14 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .column-cells-name,
         .column-cells-type {
             color: #ffffff;
+            font-size: .75rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .name-cell {
+            color: #ffffff;
+            text-align: left;
             font-size: .75rem;
             font-weight: 700;
             line-height: 1;
@@ -585,6 +620,86 @@ TECHDEBT: Handle the terrorist -1 hand size event
         .info-popup p:last-child {
             margin-bottom: 0;
         }
+
+        .move-armed {
+            outline: 4px solid rgba(255, 255, 255, .5);
+            outline-offset: -2px;
+        }
+
+        td.drop-target {
+            outline: 4px dashed rgba(255, 255, 255, .35);
+            outline-offset: -2px;
+        }
+
+        /* Big table mode: taller rows and larger headers */
+        .table-scale-big th {
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+
+        .table-scale-big .column-header-info,
+        .table-scale-big .column-header-name,
+        .table-scale-big .column-header-type,
+        .table-scale-big .column-header-factions {
+            font-size: 1.25rem;
+        }
+
+        .table-scale-big td {
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+
+        .table-scale-big .check-group input {
+            width: 20px;
+            height: 20px;
+            transform: translateY(2px);
+        }
+
+        .table-scale-big .column-cells-name,
+        .table-scale-big .column-cells-type,
+        .table-scale-big .name-cell {
+            font-size: .9rem;
+        }
+
+        .table-scale-big td[data-move-rowid][data-move-source] {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        /* Bigger table mode: even taller rows and larger headers */
+        .table-scale-bigger th {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .table-scale-bigger .column-header-info,
+        .table-scale-bigger .column-header-name,
+        .table-scale-bigger .column-header-type,
+        .table-scale-bigger .column-header-factions {
+            font-size: 1.5rem;
+        }
+
+        .table-scale-bigger td {
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+
+        .table-scale-bigger .check-group input {
+            width: 24px;
+            height: 24px;
+            transform: translateY(3px);
+        }
+
+        .table-scale-bigger .column-cells-name,
+        .table-scale-bigger .column-cells-type,
+        .table-scale-bigger .name-cell {
+            font-size: 1.15rem;
+        }
+
+        .table-scale-bigger td[data-move-rowid][data-move-source] {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -599,11 +714,9 @@ TECHDEBT: Handle the terrorist -1 hand size event
                     filter the table, and keep progress saved automatically in your browser.</p>-->
                 <div class="toolbar">
                     <div class="field search-field">
-                        <label for="searchBox">Search cards</label>
                         <input id="searchBox" type="text" placeholder="Karama, poison, stunner..." />
                     </div>
                     <div class="field small-field">
-                        <label for="typeFilter">Type</label>
                         <select id="typeFilter"></select>
                     </div>
                     <div class="legend" id="legend"></div>
@@ -1088,6 +1201,7 @@ Exp1:
         };
 
         let actionConfirmTimer = null;
+        let armedMove = null;
 
         function clearActionConfirmState() {
             actionConfirmState.resetDeck = false;
@@ -1265,21 +1379,22 @@ Exp1:
             <td class="column-header-active column-cells-metric">${activeCount}</td>
             <!--<td class="column-header-pct column-cells-metric">${knownPct}</td>-->
             <td class="column-header-info column-cells-info" style="background:${row.color};"><button class="info-btn" data-rowid="${row.id}" aria-label="Show info for ${row.name}">i</button></td>
-            <td class="column-header-name column-cells-name" style="background:${row.color};">${row.name}</td>
+            <td class="sticky-col-name name-cell ${armedMove && armedMove.rowId === row.id && armedMove.sourceKey === "deck" ? "move-armed" : ""}" data-move-rowid="${row.id}" data-move-source="deck" style="background:${row.color};">${row.name}</td>
             <td class="column-header-type column-cells-type" style="background:${row.color};">${row.type}</td>
-            ${visibleSummaryColumns.map((column) => `<td style="background:${column.key === "deck" ? "rgba(90, 52, 22, 0.5)" : "rgba(168, 116, 66, 0.5)"};">${buildChecks(row, column.key)}</td>`).join("")}
+            ${visibleSummaryColumns.map((column) => `<td data-move-rowid="${row.id}" data-move-source="${column.key}" class="${armedMove && armedMove.rowId === row.id && armedMove.sourceKey === column.key ? "move-armed" : ""} ${armedMove && armedMove.rowId === row.id && armedMove.sourceKey !== column.key ? "drop-target" : ""}" style="background:${column.key === "deck" ? "rgba(90, 52, 22, 0.5)" : "rgba(168, 116, 66, 0.5)"};">${buildChecks(row, column.key)}</td>`).join("")}
             ${visibleFactions.map((faction) => {
                     const hex = faction.color.replace("#", "");
                     const red = parseInt(hex.substring(0, 2), 16);
                     const green = parseInt(hex.substring(2, 4), 16);
                     const blue = parseInt(hex.substring(4, 6), 16);
-                    return `<td style="background:rgba(${red}, ${green}, ${blue}, 0.5);">${buildChecks(row, faction.key)}</td>`;
+                    return `<td data-move-rowid="${row.id}" data-move-source="${faction.key}" class="${armedMove && armedMove.rowId === row.id && armedMove.sourceKey === faction.key ? "move-armed" : ""} ${armedMove && armedMove.rowId === row.id && armedMove.sourceKey !== faction.key ? "drop-target" : ""}" style="background:rgba(${red}, ${green}, ${blue}, 0.5);">${buildChecks(row, faction.key)}</td>`;
                 }).join("")}
           </tr>
         `;
             }).join("");
 
             bindCheckboxes();
+            bindTouchMoveCard();
             renderSummary();
             saveState();
         }
@@ -1419,6 +1534,7 @@ Exp1:
                 state.selectedExpansions = [...current, expansionKey];
             }
 
+            armedMove = null;
             clearActionConfirmState();
             saveState();
             populateControls();
@@ -1428,6 +1544,7 @@ Exp1:
 
         function toggleExpansionColumnsVisibility() {
             state.showExpansionColumns = state.showExpansionColumns === false;
+            armedMove = null;
             clearActionConfirmState();
             saveState();
             populateControls();
@@ -1516,8 +1633,14 @@ Exp1:
                     const pct = Math.round((columnChecked / Math.max(columnAvailable, 1)) * 100) || 0;
                     return `<button type="button" class="pill ${pillClass} ${isActive ? "active" : "inactive"}" data-summary-toggle="${column.key}" aria-pressed="${isActive}"><span>${column.label}</span><strong>${columnChecked}/${columnAvailable} (${pct}%)</strong></button>`;
                 }).join("");
+                // Add Big/Small/BIGGER button after preExpansionControls
+                const table = document.getElementById("trackerTable");
+                const isBiggerMode = table && table.classList.contains("table-scale-bigger");
+                const isBigMode = table && table.classList.contains("table-scale-big");
+                const tableScaleLabel = isBiggerMode ? "BIGGER" : (isBigMode ? "BIG" : "small");
+                const tableScaleButton = `<button type="button" class="pill secondary ${isBiggerMode ? "bigger-active" : isBigMode ? "big-active" : ""}" data-toggle-table-scale style="color:#fff;">${tableScaleLabel}</button>`;
 
-                summaryActions.innerHTML = resetButton + clearButton + summaryButtons + preExpansionControls + expansionToggleButton + expansionButtons + postExpansionActions;
+                summaryActions.innerHTML = resetButton + clearButton + summaryButtons + preExpansionControls + tableScaleButton + expansionToggleButton + expansionButtons + postExpansionActions;
 
                 const resetDeckButton = summaryActions.querySelector('[data-summary-action="reset-deck"]');
                 if (resetDeckButton) {
@@ -1574,6 +1697,25 @@ Exp1:
                 if (toggleExpansionColumnsButton) {
                     toggleExpansionColumnsButton.addEventListener("click", toggleExpansionColumnsVisibility);
                 }
+                // Big/Small/BIGGER button handler
+                const toggleTableScaleButton = summaryActions.querySelector("[data-toggle-table-scale]");
+                if (toggleTableScaleButton) {
+                    toggleTableScaleButton.addEventListener("click", () => {
+                        const table = document.getElementById("trackerTable");
+                        if (table) {
+                            if (table.classList.contains("table-scale-bigger")) {
+                                table.classList.remove("table-scale-bigger");
+                                table.classList.remove("table-scale-big");
+                            } else if (table.classList.contains("table-scale-big")) {
+                                table.classList.remove("table-scale-big");
+                                table.classList.add("table-scale-bigger");
+                            } else {
+                                table.classList.add("table-scale-big");
+                            }
+                            renderSummary();
+                        }
+                    });
+                }
 
                 summaryActions.querySelectorAll("[data-expansion-toggle]").forEach((button) => {
                     button.addEventListener("click", () => {
@@ -1604,6 +1746,7 @@ Exp1:
                 state.selectedFactions = [...current, factionKey];
             }
 
+            armedMove = null;
             clearActionConfirmState();
             saveState();
             buildHeader();
@@ -1625,6 +1768,7 @@ Exp1:
                 state.selectedSummaryColumns = [...current, columnKey];
             }
 
+            armedMove = null;
             clearActionConfirmState();
             saveState();
             buildHeader();
@@ -1659,6 +1803,7 @@ Exp1:
                 }
             });
 
+            armedMove = null;
             state.checks = nextChecks;
             saveState();
             buildHeader();
@@ -1666,6 +1811,7 @@ Exp1:
         }
 
         function clearAllChecks() {
+            armedMove = null;
             state.checks = {};
             saveState();
             renderTable();
@@ -1676,6 +1822,7 @@ Exp1:
             if (!confirmed) {
                 return;
             }
+            armedMove = null;
             state.checks = {};
             saveState();
             renderTable();
@@ -1707,6 +1854,85 @@ Exp1:
                 }
             };
             reader.readAsText(file);
+        }
+
+        function moveCardBetweenColumns(rowId, sourceKey, targetKey) {
+            const row = rows.find((entry) => entry.id === rowId);
+            if (!row || sourceKey === targetKey) {
+                return false;
+            }
+
+            const sourceBoxCount = getRowBoxCountForFaction(row, sourceKey);
+            const targetBoxCount = getRowBoxCountForFaction(row, targetKey);
+
+            let sourceCheckedIndex = -1;
+            for (let index = 0; index < sourceBoxCount; index += 1) {
+                if (state.checks[cellKey(rowId, sourceKey, index)]) {
+                    sourceCheckedIndex = index;
+                    break;
+                }
+            }
+
+            if (sourceCheckedIndex === -1) {
+                return false;
+            }
+
+            let targetOpenIndex = -1;
+            for (let index = 0; index < targetBoxCount; index += 1) {
+                if (!state.checks[cellKey(rowId, targetKey, index)]) {
+                    targetOpenIndex = index;
+                    break;
+                }
+            }
+
+            if (targetOpenIndex === -1) {
+                return false;
+            }
+
+            delete state.checks[cellKey(rowId, sourceKey, sourceCheckedIndex)];
+            state.checks[cellKey(rowId, targetKey, targetOpenIndex)] = true;
+
+            armedMove = null;
+            saveState();
+            renderTable();
+            return true;
+        }
+
+        function bindTouchMoveCard() {
+            trackerBody.querySelectorAll("[data-move-rowid][data-move-source]").forEach((cell) => {
+                cell.addEventListener("click", (event) => {
+                    if (event.target && (event.target.closest("input") || event.target.closest("button.info-btn"))) {
+                        return;
+                    }
+
+                    const rowId = cell.dataset.moveRowid;
+                    const sourceKey = cell.dataset.moveSource;
+
+                    if (!armedMove) {
+                        armedMove = { rowId, sourceKey };
+                        renderTable();
+                        return;
+                    }
+
+                    if (armedMove.rowId === rowId && armedMove.sourceKey === sourceKey) {
+                        armedMove = null;
+                        renderTable();
+                        return;
+                    }
+
+                    if (armedMove.rowId !== rowId) {
+                        armedMove = { rowId, sourceKey };
+                        renderTable();
+                        return;
+                    }
+
+                    const moved = moveCardBetweenColumns(rowId, armedMove.sourceKey, sourceKey);
+                    if (!moved) {
+                        armedMove = null;
+                        renderTable();
+                    }
+                });
+            });
         }
 
         searchBox.addEventListener("input", renderTable);
