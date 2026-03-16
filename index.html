@@ -27,22 +27,20 @@ TECHDEBT: Handle the terrorist -1 hand size event
         }
 
         body {
-            margin: 0;
-            padding-bottom: 5px;
             font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: linear-gradient(180deg, #0d0f12, #161a20 40%, #0f1217);
             color: var(--text);
+            margin: 0;
+            min-height: 100vh;
         }
 
         .app {
-            max-width: 1160px;
+            /* 1160 for iPad Air 11"; 1400 for 13" */
+            max-width: 1400px;
             height: 100vh;
             margin: 0 auto;
             padding: 5px;
-        }
-
-        body {
-            min-height: 100vh;
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
         }
 
         .hero {
@@ -343,7 +341,7 @@ TECHDEBT: Handle the terrorist -1 hand size event
         th,
         td {
             border: 1px solid #acacac;
-            padding: 4px 4px;
+            padding: 2px 4px;
             text-align: center;
             vertical-align: middle;
         }
@@ -457,7 +455,8 @@ TECHDEBT: Handle the terrorist -1 hand size event
             align-items: center;
             gap: 2px;
             flex-wrap: nowrap;
-            min-height: 18px;
+            min-height: 14px;
+            line-height: 1;
         }
 
         .check-group input {
@@ -471,13 +470,14 @@ TECHDEBT: Handle the terrorist -1 hand size event
 
         @media (pointer: coarse) {
             .check-group {
-                gap: 4px;
-                min-height: 32px;
+                gap: 2px;
+                min-height: 24px;
+                line-height: 1;
             }
 
             .check-group input {
-                width: 28px;
-                height: 28px;
+                width: 24px;
+                height: 24px;
             }
         }
 
